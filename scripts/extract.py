@@ -16,6 +16,7 @@ def spotify_api_setup():
     sp = spotipy.Spotify(client_credentials_manager=credentials)
     return sp
 
+
 def extract_playlist_tracks(sp, playlist_id):
     all_tracks = []
     results = sp.playlist_items(playlist_id, additional_types=['track'], limit=100)
