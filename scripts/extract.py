@@ -18,6 +18,12 @@ def spotify_api_setup():
 
 
 def extract_playlist_tracks(sp, playlist_id):
+    playlist_info = sp.playlist(playlist_id)
+    playlist_metadata = {
+        "name": playlist_info.get("name", ""),
+        "owner": playlist_info.get("owner", {}).get("display_name", ""),
+        "total_tracks": playlist_info.get("tracks", {}).get("total", 0)
+    }
     all_tracks = []
     results = sp.playlist_items(playlist_id, additional_types=['track'], limit=100)
     
@@ -63,7 +69,7 @@ def extract_playlist_tracks(sp, playlist_id):
         else:
             break
     
-    return pd.DataFrame(all_tracks)
+    return pd.DataFrame(all_tracks), playlist_metadata
 
 
 

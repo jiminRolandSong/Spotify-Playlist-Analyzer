@@ -24,11 +24,14 @@ def analyze_playlist(request):
         
         # Extract
         sp = spotify_api_setup()
-        raw_df = extract_playlist_tracks(sp, playlist_id)
+        raw_df, metadata = extract_playlist_tracks(sp, playlist_id)
         
         # Transform
         clean_df = transform_playlist_df(raw_df)
         clean_df["source_playlist_id"] = playlist_id
+        clean_df["playlist_name"] = metadata["name"]
+        clean_df["playlist_owner"] = metadata["owner"]
+        clean_df["playlist_total_tracks"] = metadata["total_tracks"]
         
         # Save locally
         os.makedirs("webData", exist_ok=True)
@@ -87,10 +90,18 @@ def dashboard(request, playlist_id):
             .to_dict()
         )
         
+        # Metadata from the first row
+        playlist_name = df["playlist_name"].iloc[0] if "playlist_name" in df else ""
+        playlist_owner = df["playlist_owner"].iloc[0] if "playlist_owner" in df else ""
+        playlist_total_tracks = df["playlist_total_tracks"].iloc[0] if "playlist_total_tracks" in df else ""
+        
         context = {
             "top_artists": top_artists,
             "top_genres": top_genres,
             "track_count": len(df),
+            "playlist_name": playlist_name,
+            "playlist_owner": playlist_owner,
+            "playlist_total_tracks": playlist_total_tracks
         }
         
         return render(request, "dashboard/dashboard.html", context)
