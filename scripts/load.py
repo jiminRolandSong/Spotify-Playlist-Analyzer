@@ -26,6 +26,7 @@ def safe_parse(x):
     except Exception:
         return []
 
+
 # Load to PostgreSQL
 
 def load_to_postgreSQL(df, table_name="playlist_tracks"):
@@ -34,11 +35,7 @@ def load_to_postgreSQL(df, table_name="playlist_tracks"):
     df["artist_ids"] = df["artist_ids"].apply(safe_parse)
 
     with engine.begin() as connection:
-        df.to_sql(table_name, con=connection, if_exists="replace", index=False,  dtype={
-            "artist_names": ARRAY(TEXT),
-            "track_genres": ARRAY(TEXT),
-            "artist_ids": ARRAY(TEXT),
-        })
+        df.to_sql(table_name, con=connection, if_exists="replace", index=False)
 
 if __name__=="__main__":
     df = pd.read_csv("data/cleaned_playlist_data.csv")

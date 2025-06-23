@@ -22,7 +22,6 @@ def extract_playlist_tracks(sp, playlist_id):
     playlist_metadata = {
         "name": playlist_info.get("name", ""),
         "owner": playlist_info.get("owner", {}).get("display_name", ""),
-        "total_tracks": playlist_info.get("tracks", {}).get("total", 0)
     }
     all_tracks = []
     results = sp.playlist_items(playlist_id, additional_types=['track'], limit=100)
@@ -80,8 +79,8 @@ if __name__ == "__main__":
     
     sp = spotify_api_setup()
     print("Extracting playlist tracks...")
-    df = extract_playlist_tracks(sp, playlist_id)
+    df_tracks, playlist_meta = extract_playlist_tracks(sp, playlist_id)
     
     os.makedirs("data", exist_ok=True)
-    df.to_csv("data/raw_playlist_data.csv", index=False)
+    df_tracks.to_csv("data/raw_playlist_data.csv", index=False)
     print("Data saved to data/raw_playlist_data.csv")
