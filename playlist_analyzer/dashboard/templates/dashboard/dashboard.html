@@ -1,8 +1,7 @@
 <h1>Playlist Dashboard</h1>
 
 <h2>{{ playlist_name }} (by {{ playlist_owner }})</h2>
-<p>Total tracks on Playlist: {{ playlist_total_tracks }}</p>
-<p>Tracks processed: {{ track_count }}</p>
+
 
 <h2>Top Artists</h2>
 <ul>
@@ -17,3 +16,27 @@
     <li>{{ genre }}: {{ count }}</li>
   {% endfor %}
 </ul>
+
+<h2>Tracks processed: {{ track_count }}</h2>
+
+<h2>Track Table</h2>
+<table border="1">
+  <tr>
+    <th>Track Name</th>
+    <th>Artist(s)</th>
+    <th>Album</th>
+    <th>Popularity</th>
+    <th>Duration (sec)</th>
+    <th>Genres</th>
+  </tr>
+  {% for row in track_table %}
+    <tr>
+      <td>{{ row.track_name }}</td>
+      <td>{{ row.artist_names|join:", " }}</td>
+      <td>{{ row.album_name }}</td>
+      <td>{{ row.track_popularity }}</td>
+      <td>{{ row.track_duration_sec|floatformat:2 }}</td>
+      <td>{{ row.track_genres|join:", " }}</td>
+    </tr>
+  {% endfor %}
+</table>

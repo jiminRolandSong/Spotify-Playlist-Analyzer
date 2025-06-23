@@ -31,8 +31,21 @@ def analyze_playlist(request):
         clean_df["source_playlist_id"] = playlist_id
         clean_df["playlist_name"] = metadata["name"]
         clean_df["playlist_owner"] = metadata["owner"]
-        clean_df["playlist_total_tracks"] = metadata["total_tracks"]
         
+        clean_df["playlist_owner"] = metadata["owner"]
+
+        print("--- Debugging clean_df before load ---")
+        print(clean_df["artist_names"].head())
+        print(clean_df["artist_names"].apply(type).value_counts())
+        print(clean_df["artist_names"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
+
+        print(clean_df["track_genres"].head())
+        print(clean_df["track_genres"].apply(type).value_counts())
+        print(clean_df["track_genres"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
+
+        print(clean_df["artist_ids"].head())
+        print(clean_df["artist_ids"].apply(type).value_counts())
+        print(clean_df["artist_ids"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
         # Save locally
         os.makedirs("webData", exist_ok=True)
         clean_df.to_csv(f"webData/{playlist_id}_cleaned.csv", index=False)
@@ -90,10 +103,11 @@ def dashboard(request, playlist_id):
             .to_dict()
         )
         
+        track_table = df[["track_name", "artist_names", "album_name", "track_popularity", "track_duration_sec", "track_genres"]].to_dict(orient="records")
+        
         # Metadata from the first row
         playlist_name = df["playlist_name"].iloc[0] if "playlist_name" in df else ""
         playlist_owner = df["playlist_owner"].iloc[0] if "playlist_owner" in df else ""
-        playlist_total_tracks = df["playlist_total_tracks"].iloc[0] if "playlist_total_tracks" in df else ""
         
         context = {
             "top_artists": top_artists,
@@ -101,7 +115,7 @@ def dashboard(request, playlist_id):
             "track_count": len(df),
             "playlist_name": playlist_name,
             "playlist_owner": playlist_owner,
-            "playlist_total_tracks": playlist_total_tracks
+            "track_table": track_table
         }
         
         return render(request, "dashboard/dashboard.html", context)
