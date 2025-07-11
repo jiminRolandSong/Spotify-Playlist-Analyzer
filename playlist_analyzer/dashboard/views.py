@@ -1,17 +1,47 @@
+from unittest import result
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import os
 import sys
 import pandas as pd
+import sqlite3
+import ast
+from django.conf import settings
+from sqlalchemy import create_engine
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
 
+
 from scripts.extract import spotify_api_setup, extract_playlist_tracks
 from scripts.transform import transform_playlist_df
-from scripts.load import load_to_postgreSQL
 
-# Create your views here.
+SQLITE_DB_FILE = os.path.join(settings.BASE_DIR, "webData", "playlist_data.db")
+SQLITE_ENGINE = create_engine(f"sqlite:///{SQLITE_DB_FILE}")
+
+def load_to_sqlite(df, table_name="playlist_tracks"):
+
+    def safe_parse(x):
+        if isinstance(x, list):
+            return x
+        try:
+            import ast
+            return ast.literal_eval(x)
+        except:
+            return []
+
+    df["artist_names"] = df["artist_names"].apply(safe_parse)
+    df["track_genres"] = df["track_genres"].apply(safe_parse)
+    df["artist_ids"] = df["artist_ids"].apply(safe_parse)
+
+   
+    df["artist_names"] = df["artist_names"].apply(lambda x: ", ".join(x))
+    df["track_genres"] = df["track_genres"].apply(lambda x: ", ".join(x))
+    df["artist_ids"] = df["artist_ids"].apply(lambda x: ", ".join(x))
+
+    conn = sqlite3.connect(SQLITE_DB_FILE)
+    df.to_sql(table_name, conn, if_exists="replace", index=False)
+    conn.close()
 
 
 def index(request):
@@ -31,8 +61,7 @@ def analyze_playlist(request):
         clean_df["source_playlist_id"] = playlist_id
         clean_df["playlist_name"] = metadata["name"]
         clean_df["playlist_owner"] = metadata["owner"]
-        
-        clean_df["playlist_owner"] = metadata["owner"]
+    
 
         print("--- Debugging clean_df before load ---")
         print(clean_df["artist_names"].head())
@@ -47,46 +76,40 @@ def analyze_playlist(request):
         print(clean_df["artist_ids"].apply(type).value_counts())
         print(clean_df["artist_ids"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
         # Save locally
-        os.makedirs("webData", exist_ok=True)
-        clean_df.to_csv(f"webData/{playlist_id}_cleaned.csv", index=False)
-        
-        # Load to SQL
-        load_to_postgreSQL(clean_df, table_name="web_playlist_tracks")
-        
-        return redirect('dashboard', playlist_id = playlist_id)
+        os.makedirs(os.path.join(settings.BASE_DIR, "webData"), exist_ok=True) # Ensure path is absolute
+        clean_df.to_csv(os.path.join(settings.BASE_DIR, f"webData/{playlist_id}_cleaned.csv"), index=False) # Ensure path is absolute
+
+
+        # Load to SQLite
+        load_to_sqlite(clean_df, table_name="web_playlist_tracks")
+
+        return redirect('dashboard', playlist_id=playlist_id)
     return HttpResponse("invalid method", status=405)
 
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
-load_dotenv()
-
-db_user = os.getenv("DB_USER")
-db_pass = os.getenv("DB_PASSWORD")
-db_host = os.getenv("DB_HOST")
-db_port = os.getenv("DB_PORT")
-db_name = os.getenv("DB_NAME")
-engine = create_engine(f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}")
 
 # DASHBOARD
 
 def dashboard(request, playlist_id):
     try:
-        df = pd.read_sql(
-            "SELECT * FROM web_playlist_tracks WHERE source_playlist_id = %s",
-            engine,
-            params=[(playlist_id,)]
-        )
+        with SQLITE_ENGINE.connect() as connection: #Get a connection from the engine
+            from sqlalchemy import text # Import text from sqlalchemy for parameterized queries
+            sql_query = text("SELECT * FROM web_playlist_tracks WHERE source_playlist_id = :playlist_id")
+            result = connection.execute(sql_query, {"playlist_id": playlist_id}) # Pass parameters as a dictionary
+            
+            
+            df = pd.DataFrame(result.fetchall(), columns=result.keys()) #Create DataFrame from fetched results
 
-        def parse_pg_array(x):
-            if isinstance(x, str) and x.startswith('{') and x.endswith('}'):
-                return [item.strip().strip('"') for item in x.strip('{}').split(',')]
-            return x
+        def parse_str_to_list(x):
+            if isinstance(x, str):
+                return [item.strip() for item in x.split(',') if item.strip()] # Split by comma, strip spaces, remove empty strings
+            return [] # Return empty list if not a string (e.g., NaN)
         
-        df["artist_names"] = df["artist_names"].apply(parse_pg_array)
-        df["track_genres"] = df["track_genres"].apply(parse_pg_array)
-        df["artist_ids"] = df["artist_ids"].apply(parse_pg_array)
-
+        df["artist_names"] = df["artist_names"].apply(parse_str_to_list)
+        df["track_genres"] = df["track_genres"].apply(parse_str_to_list)
+        df["artist_ids"] = df["artist_ids"].apply(parse_str_to_list)
 
         top_artists = (
             # Flatten the lists of values
