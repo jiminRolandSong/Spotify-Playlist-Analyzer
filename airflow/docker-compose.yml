@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+      - ENV_MODE=docker
+    networks:
+      - airflow-net
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+
+  redis:
+    image: redis:5
+    networks:
+      - airflow-net
+
+  airflow-webserver:
+    image: apache/airflow:2.2.3
+    environment:
+      - ENV_MODE=docker
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=ss5TtELN0BFLuTxecZuJLbQ3xNlviJfD8dEcowW34ug=
+      - _PIP_ADDITIONAL_REQUIREMENTS=spotipy pandas python-dotenv psycopg2-binary
+      - AIRFLOW__WEBSERVER__SECRET_KEY=zHxNBLQ2oGe_64Pw7jSFZUvLBbiXH2Ix1pU7RB_97p4
+    networks:
+      - airflow-net
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    command: webserver
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow-logs:/opt/airflow/logs
+      - ./../scripts:/opt/airflow/scripts
+      - ./requirements.txt:/requirements.txt
+      -  ./data:/opt/airflow/data
+      - ../.env.docker:/opt/airflow/.env.docker
+
+  airflow-scheduler:
+    image: apache/airflow:2.2.3
+    environment:
+      - ENV_MODE=docker
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=ss5TtELN0BFLuTxecZuJLbQ3xNlviJfD8dEcowW34ug=
+      - _PIP_ADDITIONAL_REQUIREMENTS=spotipy pandas python-dotenv psycopg2-binary
+      - AIRFLOW__WEBSERVER__SECRET_KEY=zHxNBLQ2oGe_64Pw7jSFZUvLBbiXH2Ix1pU7RB_97p4
+    networks:
+      - airflow-net
+    depends_on:
+      - postgres
+      - redis
+    command: scheduler
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./../scripts:/opt/airflow/scripts
+      -  ./requirements.txt:/requirements.txt
+      -  ./data:/opt/airflow/data
+      - ../.env.docker:/opt/airflow/.env.docker
+
+  airflow-worker:
+    image: apache/airflow:2.2.3
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__FERNET_KEY=ss5TtELN0BFLuTxecZuJLbQ3xNlviJfD8dEcowW34ug=
+      - _PIP_ADDITIONAL_REQUIREMENTS=spotipy pandas python-dotenv psycopg2-binary
+      - AIRFLOW__WEBSERVER__SECRET_KEY=zHxNBLQ2oGe_64Pw7jSFZUvLBbiXH2Ix1pU7RB_97p4
+    networks:
+      - airflow-net
+    depends_on:
+      - postgres
+      - redis
+    # Optional: worker는 LocalExecutor에서는 비활성화해도 됨
+    command: celery worker
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./../scripts:/opt/airflow/scripts
+      -  ./requirements.txt:/requirements.txt
+      -  ./data:/opt/airflow/data
+      - ../.env.docker:/opt/airflow/.env.docker
+
+networks:
+  airflow-net:
+    driver: bridge
+
+volumes:
+  postgres-db-volume:
+  airflow-dags:
+  airflow-logs:
+  airflow-sqlalchemy:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/lib/airflow/sqlalchemy
+      o: bind
