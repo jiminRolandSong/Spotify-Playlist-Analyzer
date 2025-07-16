@@ -22,8 +22,8 @@ default_args = {
     "retry_delay": timedelta(minutes=1),
 }
 
-# Playlist ID (set your target playlist here)
-PLAYLIST_ID = "2wazkzhuzpipWcVKjOa7Vg?si=aef86f19c5254c97"  # Example: Today's Top Hits
+# Playlist ID 
+PLAYLIST_ID = "2wazkzhuzpipWcVKjOa7Vg?si=aef86f19c5254c97"  
 
 # File paths
 RAW_PATH = "/opt/airflow/data/raw_playlist_data.csv"
@@ -49,7 +49,7 @@ with DAG(
         sp = spotify_api_setup()
         df, _ = extract_playlist_tracks(sp, playlist_id)
         df.to_csv(RAW_PATH, index=False)
-        print(f"✅ Extracted and saved {len(df)} tracks")
+        print(f"Extracted and saved {len(df)} tracks")
 
     def transform_task():
         import pandas as pd

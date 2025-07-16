@@ -39,14 +39,14 @@ def transform_data():
     output_parquet_path = "/opt/airflow/data/cleaned_playlist_data.parquet"
 
     if not os.path.exists(input_path):
-        raise FileNotFoundError("❌ raw_playlist_data.csv not found")
+        raise FileNotFoundError("raw_playlist_data.csv not found")
 
     df = pd.read_csv(input_path)
     df = transform_playlist_df(df)
 
     df.to_csv(output_csv_path, index=False)
     df.to_parquet(output_parquet_path, index=False)
-    print("✅ [Transform] Saved CSV and Parquet versions of cleaned playlist data")
+    print("[Transform] Saved CSV and Parquet versions of cleaned playlist data")
 
 if __name__ == "__main__":
     transform_data()

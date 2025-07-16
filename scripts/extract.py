@@ -13,8 +13,7 @@ load_dotenv()
 
 
 def spotify_api_setup():
-    env_mode = os.getenv("ENV_MODE", "local")  # 기본값은 local
-
+    env_mode = os.getenv("ENV_MODE", "local") 
     if env_mode == "docker":
         dotenv_path = ".env.docker"
     else:
@@ -83,7 +82,7 @@ def extract_playlist_tracks(sp, playlist_id):
     return pd.DataFrame(all_tracks), playlist_metadata
 
 def extract_data():
-    playlist_id = "2wazkzhuzpipWcVKjOa7Vg" # Example playlist ID
+    playlist_id = "2wazkzhuzpipWcVKjOa7Vg" 
     sp = spotify_api_setup()
     df_tracks, playlist_meta = extract_playlist_tracks(sp, playlist_id)
     os.makedirs("/opt/airflow/data", exist_ok=True)

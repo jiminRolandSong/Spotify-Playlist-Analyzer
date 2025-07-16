@@ -14,22 +14,39 @@ This project analyzes Spotify playlists: it extracts track and artist data using
 ## Project Structure
 
 ```
-playlist_analyzer/
-├── manage.py
-├── playlist_analyzer/
-│   ├── settings.py
-│   ├── urls.py
-├── dashboard/
-│   ├── views.py
-│   ├── templates/dashboard/dashboard.html
+Playlist Project/
+├── airflow/
+│ ├── dags/
+│ │ └── playlist_etl_dag.py
+│ ├── logs/
+│ └── airflow.cfg (ignored)
 ├── scripts/
-│   ├── extract.py
-│   ├── transform.py
-│   ├── load.py
-├── webData/
+│ ├── extract.py
+│ ├── transform.py
+│ └── load.py
+├── playlist_analyzer/ # Django app (WIP)
+├── data/
+│ ├── raw_playlist_data.csv
+│ └── cleaned_playlist_data.csv
+├── docker-compose.yml
 ├── requirements.txt
-├── .env
+└── .env.local / .env.docke
 ```
+## Run with Docker
+
+### Build & start services
+docker-compose up --build
+
+
+### Create Airflow user (only once)
+docker exec -it airflow-webserver airflow users create \\
+  --username airflow \\
+  --password airflow \\
+  --firstname Air \\
+  --lastname Flow \\
+  --role Admin \\
+  --email admin@example.com
+
 
 ## Setup Instructions
 
