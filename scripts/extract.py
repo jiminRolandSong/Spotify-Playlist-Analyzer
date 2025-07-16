@@ -7,8 +7,20 @@ from dotenv import load_dotenv
 import pandas as pd
 import time
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
+
 def spotify_api_setup():
-    load_dotenv()
+    env_mode = os.getenv("ENV_MODE", "local")  # 기본값은 local
+
+    if env_mode == "docker":
+        dotenv_path = ".env.docker"
+    else:
+     dotenv_path = ".env.local"
+
+    load_dotenv(dotenv_path=dotenv_path)
     #Authentication
     client_id = os.getenv('client_id')
     client_secret = os.getenv('client_secret')
@@ -70,17 +82,13 @@ def extract_playlist_tracks(sp, playlist_id):
     
     return pd.DataFrame(all_tracks), playlist_metadata
 
-
+def extract_data():
+    playlist_id = "2wazkzhuzpipWcVKjOa7Vg" # Example playlist ID
+    sp = spotify_api_setup()
+    df_tracks, playlist_meta = extract_playlist_tracks(sp, playlist_id)
+    os.makedirs("/opt/airflow/data", exist_ok=True)
+    df_tracks.to_csv("/opt/airflow/data/raw_playlist_data.csv", index=False)
+    print("[Extract] Data saved to /opt/airflow/data/raw_playlist_data.csv")
 
 if __name__ == "__main__":
-    playlist_url = input("Enter Spotify Playlist URL or ID: ").strip()
-    playlist_id = playlist_url.split("/")[-1].split("?")[0]
-    print(f"Extracting playlist ID: {playlist_id}")
-    
-    sp = spotify_api_setup()
-    print("Extracting playlist tracks...")
-    df_tracks, playlist_meta = extract_playlist_tracks(sp, playlist_id)
-    
-    os.makedirs("data", exist_ok=True)
-    df_tracks.to_csv("data/raw_playlist_data.csv", index=False)
-    print("Data saved to data/raw_playlist_data.csv")
+    extract_data()

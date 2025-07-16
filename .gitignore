@@ -1,3 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual env
+venv/
+ENV/
+env/
+.venv/
+
+# VSCode & JetBrains
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+airflow/logs/
+*.pid
+*.sqlite3
+
+# Airflow
+airflow.cfg
+unittests.cfg
+airflow.db
+airflow-webserver.pid
+dags/__pycache__/
+*.zip
+airflow/airflow.db
+
+# Docker
+*.pid
+*.bak
+*.tar
+*.gz
+*.swp
+*.tmp
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+*.mo
+*.pot
+
+# Environment files
 .env
-.cache
-venv
+.env.*
+!.env.example  # Add if you want to share template
+
+# Jupyter
+.ipynb_checkpoints
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+__pycache__/
+data/                # If it contains large processed files
+webData/             # If temporary

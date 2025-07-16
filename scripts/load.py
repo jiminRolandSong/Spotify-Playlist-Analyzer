@@ -5,7 +5,14 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 
-load_dotenv()
+env_mode = os.getenv("ENV_MODE", "local")  # 기본값은 local
+
+if env_mode == "docker":
+    dotenv_path = ".env.docker"
+else:
+    dotenv_path = ".env.local"
+
+load_dotenv(dotenv_path=dotenv_path)
 
 db_user = os.getenv("DB_USER")
 db_pass = os.getenv("DB_PASSWORD")
@@ -13,10 +20,16 @@ db_host = os.getenv("DB_HOST")
 db_port = os.getenv("DB_PORT")
 db_name = os.getenv("DB_NAME")
 
+print(f"🔧 Loaded config from: {dotenv_path}")
+print(f"📡 DB_HOST = {db_host}")
+
+
+
 # SQLAlchemy engine
 engine = create_engine(f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}")
 
 import ast
+print(f"DB_HOST: {os.getenv('DB_HOST')}")
 
 def safe_parse(x):
     if isinstance(x, list):

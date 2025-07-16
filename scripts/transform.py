@@ -2,6 +2,9 @@ import pandas as pd
 import os
 import ast 
 
+from dotenv import load_dotenv
+load_dotenv(dotenv_path="/opt/airflow/.env")
+
 def transform_playlist_df(df):
 
     # date
@@ -30,7 +33,24 @@ def transform_playlist_df(df):
     
     return df
 
+def transform_data():
+    input_path = "/opt/airflow/data/raw_playlist_data.csv"
+    output_csv_path = "/opt/airflow/data/cleaned_playlist_data.csv"
+    output_parquet_path = "/opt/airflow/data/cleaned_playlist_data.parquet"
+
+    if not os.path.exists(input_path):
+        raise FileNotFoundError("❌ raw_playlist_data.csv not found")
+
+    df = pd.read_csv(input_path)
+    df = transform_playlist_df(df)
+
+    df.to_csv(output_csv_path, index=False)
+    df.to_parquet(output_parquet_path, index=False)
+    print("✅ [Transform] Saved CSV and Parquet versions of cleaned playlist data")
+
 if __name__ == "__main__":
+    transform_data()
+     
     input_path = "data/raw_playlist_data.csv"
     output_csv_path = "data/cleaned_playlist_data.csv"
     output_parquet_path = "data/cleaned_playlist_data.parquet"
