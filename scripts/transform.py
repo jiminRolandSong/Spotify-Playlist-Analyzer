@@ -60,6 +60,7 @@ if __name__ == "__main__":
     else:
         os.makedirs("data", exist_ok=True)
         df = pd.read_csv(input_path)
+        df = transform_playlist_df(df)
         # For PostgreSQL
         df.to_csv("data/cleaned_playlist_data.csv", index=False)
         # For Analytics

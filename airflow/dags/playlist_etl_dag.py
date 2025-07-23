@@ -1,8 +1,12 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 import sys
 import os
+
+# docker-compose up airflow-init
+# docker-compose up
+# docker-compose down
 
 # Mount points inside container
 sys.path.append("/opt/airflow/scripts")
@@ -10,6 +14,8 @@ sys.path.append("/opt/airflow/scripts")
 # Import your custom ETL scripts
 from extract import spotify_api_setup, extract_playlist_tracks
 from transform import transform_playlist_df
+import pandas as pd
+from load import load_to_postgreSQL
 
 
 # Define default args
@@ -59,8 +65,7 @@ with DAG(
         print(f"Transformed and saved {len(transformed_df)} records")
 
     def load_task():
-        import pandas as pd
-        from load import load_to_postgreSQL
+        
         df = pd.read_csv(CLEAN_PATH)
         load_to_postgreSQL(df, table_name="playlist_tracks")
         

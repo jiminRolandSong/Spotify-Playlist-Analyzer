@@ -86,6 +86,8 @@ def extract_data():
     sp = spotify_api_setup()
     df_tracks, playlist_meta = extract_playlist_tracks(sp, playlist_id)
     os.makedirs("/opt/airflow/data", exist_ok=True)
+    
+    df_tracks.to_csv("data/raw_playlist_data.csv", index=False)
     df_tracks.to_csv("/opt/airflow/data/raw_playlist_data.csv", index=False)
     print("[Extract] Data saved to /opt/airflow/data/raw_playlist_data.csv")
 
