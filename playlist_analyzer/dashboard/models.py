@@ -31,6 +31,9 @@ class Track(models.Model):
     album_label = models.CharField(max_length=255, null=True, blank=True)
     artist_ids = models.JSONField(default=list)  # Store artist IDs as a list
     artist_names = models.JSONField(default=list)  # Store artist names as a list
+    
+    class Meta:
+        unique_together = ('playlist', 'track_id',)
 
     def __str__(self):
         return self.track_name

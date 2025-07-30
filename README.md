@@ -1,122 +1,153 @@
-# Playlist Analyzer
+# Spotify Playlist Analyzer
 
-This project analyzes Spotify playlists: it extracts track and artist data using the Spotify API, transforms it, loads it into a PostgreSQL database, and displays key insights through a Django dashboard. For dashboard queries and local storage, it uses SQLite.
+
+## Overview
+
+The Spotify Playlist Analyzer is a robust data engineering and web application project designed to extract, transform, load (ETL), and visualize data from Spotify playlists. It leverages modern data pipelines and web frameworks to provide insights into playlist characteristics such as top artists, genres, and track details. While Spotify's direct audio features API is no longer available for new applications, this project focuses on maximizing insights from available metadata and providing a scalable, maintainable architecture.
 
 ## Features
 
-- Extracts detailed playlist data from Spotify
-- Cleans and transforms raw API data
-- Loads track and metadata into PostgreSQL
-- Uses SQLite for dashboard queries and local storage
-- Displays playlist metadata, top artists, top genres, and a full track table
-- Easy-to-use web interface
+* **Playlist Submission**: Users can input a Spotify playlist URL for analysis.
+* **User Authentication**: Secure user login and registration for personalized experience.
+* **ETL Pipeline Orchestration**: Automated data extraction, transformation, and loading using Apache Airflow.
+* **Persistent Data Storage**: Analyzed playlist and track data are stored in a PostgreSQL database, ensuring data integrity and persistence across user sessions.
+* **Interactive Dashboard (Planned/Enhancement)**: A Django-powered web interface to display aggregated playlist insights.
+    * Currently displays basic track information and aggregated lists.
+    * **Future Enhancement**: Integrate interactive charts for better visualization of artist and genre distribution, release year trends, and track duration insights.
+* **Data Transformation**: Cleans, enriches, and structures raw Spotify data for analytical use.
+* **Containerized Environment**: Easy setup and deployment using Docker and Docker Compose.
 
-## Project Structure
+## Architecture
 
-```
-Playlist Project/
-├── airflow/
-│ ├── dags/
-│ │ └── playlist_etl_dag.py
-│ ├── logs/
-│ └── airflow.cfg (ignored)
-├── scripts/
-│ ├── extract.py
-│ ├── transform.py
-│ └── load.py
-├── playlist_analyzer/ # Django app (WIP)
-├── data/
-│ ├── raw_playlist_data.csv
-│ └── cleaned_playlist_data.csv
-├── docker-compose.yml
-├── requirements.txt
-└── .env.local / .env.docke
-```
-## Run with Docker
+The project follows a decoupled, modular architecture:
 
-### Build & start services
-docker-compose up --build
+1.  **Data Extraction (`scripts/extract.py`)**:
+    * Connects to the Spotify Web API using `spotipy`.
+    * Extracts comprehensive metadata for playlists and their tracks.
+    * **Note**: Due to recent Spotify API changes (November 2024), direct access to `audio-features` and `audio-analysis` endpoints is deprecated for new applications. The project focuses on leveraging available track and artist metadata.
+2.  **Data Transformation (`scripts/transform.py`)**:
+    * Utilizes Pandas for data manipulation.
+    * Performs data cleaning, type conversions (e.g., milliseconds to minutes), handling of missing values, and parsing of nested data (e.g., artists, genres).
+    * Aggregates data for high-level insights (e.g., top artists, top genres).
+3.  **Data Loading (`scripts/load.py`)**:
+    * Connects to a PostgreSQL database using SQLAlchemy and Psycopg2.
+    * Implements **UPSERT (Update or Insert)** logic to ensure data idempotency and prevent duplicate entries for tracks and playlists upon re-analysis.
+    * Also saves transformed data locally in CSV and Parquet formats for data archival/inspection.
+4.  **ETL Orchestration (`airflow/dags/playlist_etl_dag.py`)**:
+    * An Apache Airflow DAG defines the sequence and dependencies of the ETL tasks (extract -> transform -> load).
+    * Allows for scheduled execution and dynamic triggering of analyses based on user input.
+5.  **Web Interface (`playlist_analyzer/`)**:
+    * A Django application serves as the frontend dashboard.
+    * Manages user authentication (`users` app).
+    * Handles playlist submission, initiating the Airflow DAG via a management command (or API trigger).
+    * Retrieves and displays processed data from the PostgreSQL database in a user-friendly format.
+6.  **Containerization**:
+    * `docker-compose.yml` sets up the entire development environment, including:
+        * PostgreSQL database
+        * Redis (for Airflow and potential future Celery integration)
+        * Airflow components (Webserver, Scheduler, Worker)
+        * Django application
 
+## Technologies Used
 
-### Create Airflow user (only once)
-docker exec -it airflow-webserver airflow users create \\
-  --username airflow \\
-  --password airflow \\
-  --firstname Air \\
-  --lastname Flow \\
-  --role Admin \\
-  --email admin@example.com
+* **Python**: Core programming language.
+* **Django**: Web framework for the dashboard.
+* **Pandas**: Data manipulation and analysis.
+* **Spotipy**: Python library for Spotify Web API interaction.
+* **Apache Airflow**: Workflow orchestration for ETL pipelines.
+* **PostgreSQL**: Primary relational database for analytical data.
+* **SQLAlchemy**: ORM/SQL Toolkit for Python database interactions.
+* **Psycopg2**: PostgreSQL adapter for Python.
+* **Docker & Docker Compose**: Containerization for environment setup.
+* **HTML/CSS/JavaScript**: Frontend development.
+* **SQLite**: (Used for temporary dashboard display; planned to be replaced by direct PostgreSQL queries for scalability).
 
+## Enhancements & Future Work
 
-## Setup Instructions
+This project is continuously evolving. Planned enhancements focus on refining the data engineering pipeline and improving the user experience:
 
-1. **Clone the repository**
-   ```bash
-   git clone https://your-repo-url.git
-   cd playlist_analyzer
-   ```
+* **Advanced Data Visualization**: Implement interactive charts (e.g., using Chart.js, Plotly.js) on the Django dashboard to visualize:
+    * Top Artists and Genres (bar charts)
+    * Release Year Distribution (histogram/bar chart)
+    * Track Duration Distribution (histogram)
+    * Playlist Popularity Score
+* **Improved ETL Robustness**:
+    * **Idempotent Data Loading**: Fully implement UPSERT logic for `Track` records in PostgreSQL to ensure that re-analyzing the same playlist updates existing data and avoids duplicates.
+    * **Granular Error Handling**: Enhance `try-except` blocks and logging in ETL scripts for better debugging and resilience against API issues or data inconsistencies.
+    * **Incremental Loading**: Explore strategies to only process new or changed tracks within a playlist when re-analyzing, based on Spotify's `snapshot_id` or track `added_at` timestamps.
+* **Enhanced User Experience**:
+    * **Asynchronous Feedback**: Provide immediate feedback to users when a playlist analysis is initiated, indicating that the process is running in the background.
+    * **Direct PostgreSQL Queries for Dashboard**: Transition dashboard data retrieval from temporary SQLite loads to direct queries against the main PostgreSQL database using Django ORM for consistency and scalability.
+    * **Playlist Management**: Allow users to easily view and manage their previously analyzed playlists, with quick summaries.
+* **Data Quality**: Further normalize and enrich genre data for more consistent analysis.
+* **Deployment**: Prepare for production deployment considerations (e.g., Gunicorn/Nginx, scalable Airflow executor).
 
-2. **Create and activate a virtual environment**
-   ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # Mac/Linux
-   source venv/bin/activate
-   ```
+## Setup and Installation
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Prerequisites
 
-4. **Create a `.env` file**
+* Docker and Docker Compose
+* A Spotify Developer Account (for API credentials)
 
-   Add your database and Spotify API credentials:
+### Steps
 
-   ```
-   DB_USER=your_db_user
-   DB_PASSWORD=your_db_password
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=your_db_name
+1.  **Clone the Repository**:
+    ```bash
+    git clone [https://github.com/your-username/spotify-playlist-analyzer.git](https://github.com/your-username/spotify-playlist-analyzer.git)
+    cd spotify-playlist-analyzer
+    ```
 
-   SPOTIPY_CLIENT_ID=your_spotify_client_id
-   SPOTIPY_CLIENT_SECRET=your_spotify_client_secret
-   SPOTIPY_REDIRECT_URI=http://localhost:8000/callback
-   ```
+2.  **Configure Environment Variables**:
+    Create a `.env` file in the project root with your Spotify API credentials and PostgreSQL database settings:
+    ```
+    SPOTIPY_CLIENT_ID=your_spotify_client_id
+    SPOTIPY_CLIENT_SECRET=your_spotify_client_secret
+    DATABASE_URL=postgresql://user:password@db:5432/spotify_db
+    SECRET_KEY=your_django_secret_key # Use a strong, random string for production
+    DJANGO_SUPERUSER_USERNAME=admin
+    DJANGO_SUPERUSER_EMAIL=admin@example.com
+    DJANGO_SUPERUSER_PASSWORD=password
+    ```
+    Ensure your `airflow/.env` file also contains relevant database and Airflow specific variables.
 
-5. **Run database migrations (if needed)**
-   ```bash
-   python manage.py migrate
-   ```
+3.  **Build and Run Docker Containers**:
+    Navigate to the `airflow` directory first to build and start Airflow services:
+    ```bash
+    cd airflow
+    docker compose up --build -d
+    ```
+    Then, build and run the Django application (from the project root):
+    ```bash
+    cd ..
+    docker compose up --build -d
+    ```
 
-6. **Start the Django development server**
-   ```bash
-   python manage.py runserver
-   ```
+4.  **Initialize Django Database & Create Superuser**:
+    ```bash
+    docker compose exec django python manage.py migrate
+    docker compose exec django python manage.py createsuperuser --noinput
+    ```
 
-7. **Open in your browser**
-   Go to [http://127.0.0.1:8000](http://127.0.0.1:8000)
+5.  **Access Services**:
+    * **Django Application**: `http://localhost:8000`
+    * **Airflow UI**: `http://localhost:8080` (Login with `airflow/airflow` or your configured credentials)
 
-   - Enter a Spotify playlist URL
-   - Click "Analyze"
-   - View the dashboard with insights and full track data
+6.  **Unpause Airflow DAG**:
+    In the Airflow UI, navigate to `DAGs`, find `playlist_etl_dag`, and toggle it to "On" (unpause).
 
-## Requirements
+## Usage
 
-Key packages included in `requirements.txt`:
+1.  **Register/Login** on the Django dashboard (`http://localhost:8000`).
+2.  Navigate to the **Submit Playlist** section.
+3.  Enter a **Spotify Playlist URL** (e.g., `https://open.spotify.com/playlist/...`).
+4.  Click **Analyze**.
+5.  The Django app will trigger the Airflow DAG. You can monitor the progress in the Airflow UI.
+6.  Once the DAG completes successfully, navigate to **My Playlists** or the **Dashboard** link for the specific playlist to view the analysis.
 
-- Django
-- pandas
-- psycopg2-binary
-- SQLAlchemy
-- python-dotenv
-- spotipy
+## Contributing
 
-## Notes
+Contributions are welcome! Feel free to open issues or pull requests for bug fixes, new features, or improvements.
 
-- Make sure PostgreSQL is running and accessible for data loading.
-- SQLite is used for dashboard queries and local storage (`webData/playlist_data.db`).
-- The `web_playlist_tracks` table will be created or replaced each time a new playlist is analyzed.
-- This project is for educational and demonstration purposes.
+## License
+
+This project is licensed under the MIT License.
