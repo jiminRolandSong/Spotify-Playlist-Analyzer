@@ -1,42 +1,56 @@
-<h1>Playlist Dashboard</h1>
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 1100px; margin: 40px auto 40px auto; background: #f7fafd; border-radius: 18px; box-shadow: 0 4px 24px #b8c1ec33; padding: 36px 36px 48px 36px;">
+    <h1 style="font-family: 'Pacifico', cursive; color: #232946; font-size: 2.2em; text-align: center; margin-bottom: 10px;">
+        <span style="font-size:1.2em;">🎶</span> Playlist Dashboard
+    </h1>
+    <h2 style="text-align:center; color:#b8c1ec; margin-bottom: 30px;">
+        {{ playlist_name }} <span style="font-size:0.8em; color:#232946;">by</span> <span style="color:#eebbc3;">{{ playlist_owner }}</span>
+    </h2>
 
-<h2>{{ playlist_name }} (by {{ playlist_owner }})</h2>
+    <div style="display:flex; flex-wrap:wrap; gap:40px; justify-content:center; margin-bottom: 30px;">
+        <div style="flex:1; min-width:250px;">
+            <h2 style="color:#232946; border-left:5px solid #ffd803; padding-left:12px; background:#fffbe6; border-radius:4px;">Top Artists</h2>
+            <ul style="background:#fff; border-radius:8px; padding:18px 24px; box-shadow:0 2px 8px #ffd80322; margin-bottom:24px; max-width:350px;">
+              {% for artist, count in top_artists.items %}
+                <li style="margin-bottom:8px; font-size:1.08em;">🎤 {{ artist }}: <b>{{ count }}</b></li>
+              {% endfor %}
+            </ul>
+        </div>
+        <div style="flex:1; min-width:250px;">
+            <h2 style="color:#232946; border-left:5px solid #b8c1ec; padding-left:12px; background:#eef2ff; border-radius:4px;">Top Genres</h2>
+            <ul style="background:#fff; border-radius:8px; padding:18px 24px; box-shadow:0 2px 8px #b8c1ec22; margin-bottom:24px; max-width:350px;">
+              {% for genre, count in top_genres.items %}
+                <li style="margin-bottom:8px; font-size:1.08em;">🎼 {{ genre }}: <b>{{ count }}</b></li>
+              {% endfor %}
+            </ul>
+        </div>
+    </div>
 
+    <h2 style="color:#232946; text-align:center; margin-bottom: 18px;">Tracks processed: <span style="color:#ffd803;">{{ track_count }}</span></h2>
 
-<h2>Top Artists</h2>
-<ul>
-  {% for artist, count in top_artists.items %}
-    <li>{{ artist }}: {{ count }}</li>
-  {% endfor %}
-</ul>
+    <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; margin-top:18px; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 16px #b8c1ec1a;">
+      <tr>
+        <th style="background:#232946; color:#fff; font-size:1.08em; letter-spacing:0.5px; border-bottom:2px solid #b8c1ec; padding:14px 10px;">Track Name</th>
+        <th style="background:#232946; color:#fff; border-bottom:2px solid #b8c1ec;">Artist(s)</th>
+        <th style="background:#232946; color:#fff; border-bottom:2px solid #b8c1ec;">Album</th>
+        <th style="background:#232946; color:#fff; border-bottom:2px solid #b8c1ec;">Popularity</th>
+        <th style="background:#232946; color:#fff; border-bottom:2px solid #b8c1ec;">Duration (sec)</th>
+        <th style="background:#232946; color:#fff; border-bottom:2px solid #b8c1ec;">Genres</th>
+      </tr>
+      {% for row in track_table %}
+        <tr style="transition:background 0.2s;">
+          <td>{{ row.track_name }}</td>
+          <td>{{ row.artist_names|join:", " }}</td>
+          <td>{{ row.album_name }}</td>
+          <td>{{ row.track_popularity }}</td>
+          <td>{{ row.track_duration_sec|floatformat:2 }}</td>
+          <td>{{ row.track_genres|join:", " }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    </div>
+</div>
+{% endblock %}
 
-<h2>Top Genres</h2>
-<ul>
-  {% for genre, count in top_genres.items %}
-    <li>{{ genre }}: {{ count }}</li>
-  {% endfor %}
-</ul>
-
-<h2>Tracks processed: {{ track_count }}</h2>
-
-<h2>Track Table</h2>
-<table border="1">
-  <tr>
-    <th>Track Name</th>
-    <th>Artist(s)</th>
-    <th>Album</th>
-    <th>Popularity</th>
-    <th>Duration (sec)</th>
-    <th>Genres</th>
-  </tr>
-  {% for row in track_table %}
-    <tr>
-      <td>{{ row.track_name }}</td>
-      <td>{{ row.artist_names|join:", " }}</td>
-      <td>{{ row.album_name }}</td>
-      <td>{{ row.track_popularity }}</td>
-      <td>{{ row.track_duration_sec|floatformat:2 }}</td>
-      <td>{{ row.track_genres|join:", " }}</td>
-    </tr>
-  {% endfor %}
-</table>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px #b8c1ec55;
+            padding: 36px 32px;
+        }
+        h2 {
+            font-family: 'Pacifico', cursive;
+            color: #232946;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        label {
+            color: #b8c1ec;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #ffd803;
+            color: #232946;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-top: 10px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover {
+            background: #eebbc3;
+        }
+        .alert-danger {
+            background: #ffe5ec;
+            color: #d72660;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .text-danger {
+            color: #d72660;
+        }
+        a {
+            color: #40916c;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Register 🎤</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            {{ form.username }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password1" class="form-label">Password</label>
+            {{ form.password1 }}
+        </div>
+        <div class="mb-3">
+            <label for="id_password2" class="form-label">Confirm Password</label>
+            {{ form.password2 }}
+        </div>
+        <button type="submit" class="btn-primary">Register</button>
+        {% if form.errors %}
+            <div class="alert-danger mt-3">
+                Please correct the errors below.
+            </div>
+            <ul class="text-danger">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </form>
+    <p class="mt-3" style="text-align:center;">Already have an account? <a href="{% url 'users:login' %}">Login here</a>.</p>
+</div>
+</body>
+</html>

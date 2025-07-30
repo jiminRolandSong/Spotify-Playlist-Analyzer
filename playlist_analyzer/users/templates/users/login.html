@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 80px auto;
+            padding: 36px 32px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px #b8c1ec55;
+        }
+        h2 {
+            font-family: 'Pacifico', cursive;
+            color: #232946;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        label {
+            color: #b8c1ec;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1.5px solid #eebbc3;
+            font-size: 1em;
+            margin-bottom: 18px;
+        }
+        button {
+            width: 100%;
+            padding: 12px 0;
+            background: #ffd803;
+            color: #232946;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #eebbc3;
+        }
+        .error {
+            color: #d72660;
+            background: #ffe5ec;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        a {
+            color: #40916c;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login 🎵</h2>
+        {% if form.errors %}
+            <div class="error">
+                Please enter a correct username and password.
+            </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p style="text-align:center; margin-top:15px;">
+            Don't have an account? <a href="{% url 'users:register' %}">Register</a>
+        </p>
+    </div>
+</body>
+</html>

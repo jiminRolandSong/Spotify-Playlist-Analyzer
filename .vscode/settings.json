@@ -8,6 +8,13 @@
             "database": "playlist_db",
             "username": "postgres",
             "name": "postgres"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "django.db.backends.sqlite3",
+            "database": "${workspaceFolder:Playlist Project}/playlist_analyzer/db.sqlite3"
         }
-    ]
+    ],
+    "sqltools.useNodeRuntime": true
 }

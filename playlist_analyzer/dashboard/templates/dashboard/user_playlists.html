@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 60px auto 0 auto; background: #e0e7ff; border-radius: 16px; box-shadow: 0 4px 24px #b8c1ec55; padding: 36px;">
+    <h2 style="font-family: 'Pacifico', cursive; color: #232946; font-size: 2em; text-align: center; margin-bottom: 20px;">
+        <span style="font-size:1.2em;">📚</span> Your Playlists
+    </h2>
+    <ul style="background:#fff; border-radius:8px; padding:18px 24px; box-shadow:0 2px 8px #b8c1ec22; margin-bottom:24px;">
+      {% for p in playlists %}
+        <li style="margin-bottom:10px; font-size:1.08em;">
+            <span style="font-size:1.1em;">🎵</span>
+            <a href="{% url 'dashboard:dashboard' p.playlist_id %}" style="color:#232946; text-decoration:none; font-weight:600;">
+                {{ p.playlist_name }}
+            </a>
+        </li>
+      {% empty %}
+        <li style="color:#b8c1ec;">You haven't added any playlists yet.</li>
+      {% endfor %}
+    </ul>
+</div>
+{% endblock %}

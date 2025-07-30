@@ -1,6 +1,7 @@
 from unittest import result
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from .models import Playlist
 import os
 import sys
 import pandas as pd
@@ -8,6 +9,7 @@ import sqlite3
 import ast
 from django.conf import settings
 from sqlalchemy import create_engine
+from django.contrib.auth.decorators import login_required
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -40,7 +42,7 @@ def load_to_sqlite(df, table_name="playlist_tracks"):
     df["artist_ids"] = df["artist_ids"].apply(lambda x: ", ".join(x))
 
     conn = sqlite3.connect(SQLITE_DB_FILE)
-    df.to_sql(table_name, conn, if_exists="replace", index=False)
+    df.to_sql(table_name, conn, if_exists="append", index=False)
     conn.close()
 
 
@@ -61,6 +63,11 @@ def analyze_playlist(request):
         clean_df["source_playlist_id"] = playlist_id
         clean_df["playlist_name"] = metadata["name"]
         clean_df["playlist_owner"] = metadata["owner"]
+        
+        if request.user.is_authenticated:
+            clean_df["user_id"] = request.user.id
+        else:
+            clean_df["user_id"] = None
     
 
         print("--- Debugging clean_df before load ---")
@@ -75,6 +82,8 @@ def analyze_playlist(request):
         print(clean_df["artist_ids"].head())
         print(clean_df["artist_ids"].apply(type).value_counts())
         print(clean_df["artist_ids"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
+        
+       
         # Save locally
         os.makedirs(os.path.join(settings.BASE_DIR, "webData"), exist_ok=True) # Ensure path is absolute
         clean_df.to_csv(os.path.join(settings.BASE_DIR, f"webData/{playlist_id}_cleaned.csv"), index=False) # Ensure path is absolute
@@ -82,22 +91,54 @@ def analyze_playlist(request):
 
         # Load to SQLite
         load_to_sqlite(clean_df, table_name="web_playlist_tracks")
+        
+        if request.user.is_authenticated:
+            # Save to user's playlist model
+            from .models import Playlist
+            playlist, created = Playlist.objects.get_or_create(
+                user=request.user,
+                playlist_id=playlist_id,
+                defaults={
+                    'playlist_url': playlist_url,
+                    'playlist_name': metadata["name"],
+                    'playlist_owner': metadata["owner"],
+                    'playlist_image': metadata.get("image", ""),
+                    'playlist_description': metadata.get("description", "")
+                }
+            )
+            if not created:
+                # Update existing playlist
+                playlist.playlist_url = playlist_url
+                playlist.playlist_name = metadata["name"]
+                playlist.playlist_owner = metadata["owner"]
+                playlist.save()
 
-        return redirect('dashboard', playlist_id=playlist_id)
+        return redirect('dashboard:dashboard', playlist_id=playlist_id)
     return HttpResponse("invalid method", status=405)
 
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
-
+@login_required
+def user_playlists(request):
+    playlists = Playlist.objects.filter(user=request.user)
+    return render(request, "dashboard/user_playlists.html", {"playlists": playlists})
+    
 # DASHBOARD
 
 def dashboard(request, playlist_id):
     try:
         with SQLITE_ENGINE.connect() as connection: #Get a connection from the engine
             from sqlalchemy import text # Import text from sqlalchemy for parameterized queries
-            sql_query = text("SELECT * FROM web_playlist_tracks WHERE source_playlist_id = :playlist_id")
-            result = connection.execute(sql_query, {"playlist_id": playlist_id}) # Pass parameters as a dictionary
+            sql_query = text("""
+                SELECT * FROM web_playlist_tracks 
+                WHERE source_playlist_id = :playlist_id AND user_id = :user_id
+            """)
+            
+            result = connection.execute(sql_query, {
+                "playlist_id": playlist_id,
+                "user_id": request.user.id
+            })
             
             
             df = pd.DataFrame(result.fetchall(), columns=result.keys()) #Create DataFrame from fetched results
@@ -143,6 +184,20 @@ def dashboard(request, playlist_id):
         
         return render(request, "dashboard/dashboard.html", context)
     
+    except Exception as e:
+        import traceback
+        return HttpResponse(f"Error: {str(e)}<br>{traceback.format_exc()}")
+
+from django.http import JsonResponse
+
+def debug_playlist_ids(request):
+    try:
+        with SQLITE_ENGINE.connect() as connection:
+            from sqlalchemy import text
+            query = text("SELECT DISTINCT source_playlist_id FROM web_playlist_tracks")
+            result = connection.execute(query)
+            ids = [row[0] for row in result.fetchall()]
+        return JsonResponse({"playlist_ids": ids})
     except Exception as e:
         import traceback
         return HttpResponse(f"Error: {str(e)}<br>{traceback.format_exc()}")

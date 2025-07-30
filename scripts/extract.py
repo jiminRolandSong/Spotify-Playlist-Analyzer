@@ -10,6 +10,7 @@ import time
 from dotenv import load_dotenv
 load_dotenv()
 
+# venv\scripts\activate
 
 
 def spotify_api_setup():
@@ -17,12 +18,11 @@ def spotify_api_setup():
     if env_mode == "docker":
         dotenv_path = ".env.docker"
     else:
-     dotenv_path = ".env.local"
+        dotenv_path = ".env.local"
 
     load_dotenv(dotenv_path=dotenv_path)
-    #Authentication
-    client_id = os.getenv('client_id')
-    client_secret = os.getenv('client_secret')
+    client_id = os.getenv('SPOTIPY_CLIENT_ID')
+    client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
     credentials = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
     sp = spotipy.Spotify(client_credentials_manager=credentials)
     return sp
