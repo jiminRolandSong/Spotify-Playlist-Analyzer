@@ -8,6 +8,9 @@ import os
 # docker-compose up
 # docker-compose down
 
+# docker exec -it airflow-postgres-1 psql -U airflow -d playlist_db -c "SELECT * FROM playlist_tracks LIMIT 10;"
+
+
 # Mount points inside container
 sys.path.append("/opt/airflow/scripts")
 
