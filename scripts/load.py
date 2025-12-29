@@ -95,9 +95,6 @@ def load_to_postgreSQL(df, table_name="playlist_tracks"):
             connection.execute(text(upsert_query))
     except Exception as e:
         print(f"Error during UPSERT operation: {e}")
-
-    with engine.begin() as connection:
-        df.to_sql(table_name, con=connection, if_exists="replace", index=False)
     
      
 if __name__=="__main__":
