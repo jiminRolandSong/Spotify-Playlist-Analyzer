@@ -72,7 +72,6 @@ This project is continuously evolving. Planned enhancements focus on refining th
     * Track Duration Distribution (histogram)
     * Playlist Popularity Score
 * **Improved ETL Robustness**:
-    * **Idempotent Data Loading**: Fully implement UPSERT logic for `Track` records in PostgreSQL to ensure that re-analyzing the same playlist updates existing data and avoids duplicates.
     * **Granular Error Handling**: Enhance `try-except` blocks and logging in ETL scripts for better debugging and resilience against API issues or data inconsistencies.
     * **Incremental Loading**: Explore strategies to only process new or changed tracks within a playlist when re-analyzing, based on Spotify's `snapshot_id` or track `added_at` timestamps.
 * **Enhanced User Experience**:
