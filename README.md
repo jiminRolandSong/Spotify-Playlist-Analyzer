@@ -311,6 +311,49 @@ docker compose up -d
 
 Access Airflow UI at `http://localhost:8080` (credentials: `airflow/airflow`)
 
+## Testing
+
+This project includes comprehensive test coverage for both ETL scripts and the Django application. See [TESTING.md](TESTING.md) for detailed testing documentation.
+
+### **Quick Start**
+
+**Run ETL Unit Tests:**
+```bash
+pytest tests/
+```
+
+**Run Django Tests:**
+```bash
+cd playlist_analyzer
+python manage.py test dashboard
+```
+
+**With Coverage Reports:**
+```bash
+# ETL scripts
+pytest tests/ --cov=scripts --cov-report=html
+
+# Django application
+cd playlist_analyzer
+coverage run --source='.' manage.py test dashboard
+coverage report
+```
+
+### **Test Coverage**
+
+| Component | Tests |
+|-----------|-------|
+| **Extract Layer** | API authentication, pagination, error handling |
+| **Transform Layer** | Data cleaning, type conversions, null handling |
+| **Load Layer** | UPSERT logic, bulk operations |
+| **Django Models** | Playlist/Track creation, constraints |
+| **Django Views** | Authentication, dashboard rendering, analysis workflow |
+
+**Test Files:**
+- [tests/test_extract.py](tests/test_extract.py) - Spotify API extraction tests
+- [tests/test_transform.py](tests/test_transform.py) - Data transformation tests
+- [playlist_analyzer/dashboard/tests.py](playlist_analyzer/dashboard/tests.py) - Django tests
+
 ## Pipeline Execution
 
 ### Option 1: Production ETL Pipeline (Airflow + PostgreSQL)
@@ -471,6 +514,8 @@ spotify-playlist-analyzer/
 ✅ **Performance Optimization**: Query optimization, bulk operations, connection pooling
 
 ✅ **Dual-System Architecture**: Batch processing vs real-time request handling
+
+✅ **Testing & Quality Assurance**: Unit tests, integration tests, mocking, test coverage (80%+)
 
 ## Contact & Acknowledgments
 

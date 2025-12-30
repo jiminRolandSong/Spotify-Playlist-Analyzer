@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-12-30T15:08:49.820804",
+  "project": "Spotify Playlist Analyzer",
+  "test_suites": [
+    {
+      "name": "ETL Unit Tests",
+      "category": "Unit Testing",
+      "success": false,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\\Users\\aanga\\Playlist Project\\venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: cov-7.0.0\ncollecting ... collected 0 items\n\n============================== warnings summary ===============================\n..\\venv\\Lib\\site-packages\\_pytest\\config\\__init__.py:1428\n  C:\\Users\\aanga\\Playl"
+    },
+    {
+      "name": "Data Quality Tests",
+      "category": "Data Validation",
+      "success": false,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\\Users\\aanga\\Playlist Project\\venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: cov-7.0.0\ncollecting ... collected 0 items\n\n============================== warnings summary ===============================\n..\\venv\\Lib\\site-packages\\_pytest\\config\\__init__.py:1428\n  C:\\Users\\aanga\\Playl"
+    },
+    {
+      "name": "Django Model Tests",
+      "category": "Backend Testing",
+      "success": false,
+      "output": ""
+    },
+    {
+      "name": "Django View Tests",
+      "category": "Integration Testing",
+      "success": false,
+      "output": ""
+    },
+    {
+      "name": "Test Coverage Report",
+      "category": "Coverage Analysis",
+      "success": false,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\\Users\\aanga\\Playlist Project\\venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: cov-7.0.0\ncollecting ... collected 0 items\n\n============================== warnings summary ===============================\n..\\venv\\Lib\\site-packages\\_pytest\\config\\__init__.py:1428\n  C:\\Users\\aanga\\Playl"
+    }
+  ],
+  "summary": {
+    "total_test_suites": 5,
+    "successful_suites": 0,
+    "failed_suites": 5,
+    "estimated_total_tests": 0,
+    "estimated_passed_tests": 0,
+    "test_categories": [
+      "Coverage Analysis",
+      "Integration Testing",
+      "Unit Testing",
+      "Backend Testing",
+      "Data Validation"
+    ]
+  }
+}

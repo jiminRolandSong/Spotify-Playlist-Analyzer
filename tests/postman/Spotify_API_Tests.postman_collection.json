@@ -1,0 +1,461 @@
+{
+  "info": {
+    "name": "Spotify Playlist Analyzer - API Tests",
+    "description": "Comprehensive API test suite for Spotify Web API integration validating authentication, data retrieval, rate limiting, and error handling",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "tokenName",
+        "value": "Spotify Access Token",
+        "type": "string"
+      },
+      {
+        "key": "accessToken",
+        "value": "{{spotify_access_token}}",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.spotify.com/v1",
+      "type": "string"
+    },
+    {
+      "key": "test_playlist_id",
+      "value": "37i9dQZF1DXcBWIGoYBM5M",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication Tests",
+      "item": [
+        {
+          "name": "Get Access Token - Valid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has access_token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.environment.set('spotify_access_token', jsonData.access_token);",
+                  "});",
+                  "",
+                  "pm.test(\"Token type is Bearer\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token_type).to.eql('Bearer');",
+                  "});",
+                  "",
+                  "pm.test(\"Expires_in is valid\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.expires_in).to.be.a('number');",
+                  "    pm.expect(jsonData.expires_in).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://accounts.spotify.com/api/token",
+              "protocol": "https",
+              "host": ["accounts", "spotify", "com"],
+              "path": ["api", "token"]
+            }
+          }
+        },
+        {
+          "name": "Get Access Token - Invalid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                },
+                {
+                  "key": "client_id",
+                  "value": "invalid_client"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "invalid_secret"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://accounts.spotify.com/api/token",
+              "protocol": "https",
+              "host": ["accounts", "spotify", "com"],
+              "path": ["api", "token"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Playlist API Tests",
+      "item": [
+        {
+          "name": "Get Playlist - Valid ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('tracks');",
+                  "    pm.expect(jsonData).to.have.property('owner');",
+                  "});",
+                  "",
+                  "pm.test(\"Tracks object has items array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.tracks).to.have.property('items');",
+                  "    pm.expect(jsonData.tracks.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Owner has display_name\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.owner).to.have.property('display_name');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/{{test_playlist_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "{{test_playlist_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Playlist - Invalid ID (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Error object returned\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "    pm.expect(jsonData.error).to.have.property('status');",
+                  "    pm.expect(jsonData.error.status).to.eql(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/invalid_playlist_id_12345",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "invalid_playlist_id_12345"]
+            }
+          }
+        },
+        {
+          "name": "Get Playlist Tracks - Pagination Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Pagination fields present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('limit');",
+                  "    pm.expect(jsonData).to.have.property('offset');",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "    pm.expect(jsonData).to.have.property('next');",
+                  "    pm.expect(jsonData).to.have.property('previous');",
+                  "});",
+                  "",
+                  "pm.test(\"Limit matches request parameter\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.limit).to.eql(50);",
+                  "});",
+                  "",
+                  "pm.test(\"Items count does not exceed limit\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.items.length).to.be.at.most(jsonData.limit);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/{{test_playlist_id}}/tracks?limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "{{test_playlist_id}}", "tracks"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Track Data Validation Tests",
+      "item": [
+        {
+          "name": "Validate Track Schema",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Track has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var firstTrack = jsonData.items[0].track;",
+                  "    ",
+                  "    pm.expect(firstTrack).to.have.property('id');",
+                  "    pm.expect(firstTrack).to.have.property('name');",
+                  "    pm.expect(firstTrack).to.have.property('duration_ms');",
+                  "    pm.expect(firstTrack).to.have.property('popularity');",
+                  "    pm.expect(firstTrack).to.have.property('album');",
+                  "    pm.expect(firstTrack).to.have.property('artists');",
+                  "});",
+                  "",
+                  "pm.test(\"Track ID is non-empty string\", function () {",
+                  "    var firstTrack = pm.response.json().items[0].track;",
+                  "    pm.expect(firstTrack.id).to.be.a('string');",
+                  "    pm.expect(firstTrack.id.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Duration is positive integer\", function () {",
+                  "    var firstTrack = pm.response.json().items[0].track;",
+                  "    pm.expect(firstTrack.duration_ms).to.be.a('number');",
+                  "    pm.expect(firstTrack.duration_ms).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Popularity is between 0-100\", function () {",
+                  "    var firstTrack = pm.response.json().items[0].track;",
+                  "    pm.expect(firstTrack.popularity).to.be.a('number');",
+                  "    pm.expect(firstTrack.popularity).to.be.within(0, 100);",
+                  "});",
+                  "",
+                  "pm.test(\"Artists array is non-empty\", function () {",
+                  "    var firstTrack = pm.response.json().items[0].track;",
+                  "    pm.expect(firstTrack.artists).to.be.an('array');",
+                  "    pm.expect(firstTrack.artists.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Album has required fields\", function () {",
+                  "    var album = pm.response.json().items[0].track.album;",
+                  "    pm.expect(album).to.have.property('id');",
+                  "    pm.expect(album).to.have.property('name');",
+                  "    pm.expect(album).to.have.property('release_date');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/{{test_playlist_id}}/tracks?limit=1",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "{{test_playlist_id}}", "tracks"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artist API Tests",
+      "item": [
+        {
+          "name": "Get Artist Genres",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Artist has genres array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('genres');",
+                  "    pm.expect(jsonData.genres).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Genres are strings\", function () {",
+                  "    var genres = pm.response.json().genres;",
+                  "    genres.forEach(function(genre) {",
+                  "        pm.expect(genre).to.be.a('string');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists/0TnOYISbd1XYRBk9myaseg",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "0TnOYISbd1XYRBk9myaseg"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rate Limiting Tests",
+      "item": [
+        {
+          "name": "Rate Limit Headers Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 429\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 429]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 429) {",
+                  "    pm.test(\"Retry-After header present on rate limit\", function () {",
+                  "        pm.response.to.have.header('Retry-After');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/{{test_playlist_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "{{test_playlist_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

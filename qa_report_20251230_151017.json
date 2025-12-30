@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-12-30T15:10:01.706355",
+  "project": "Spotify Playlist Analyzer",
+  "test_suites": [
+    {
+      "name": "ETL Unit Tests",
+      "category": "Unit Testing",
+      "success": true,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\\Users\\aanga\\Playlist Project\\venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: cov-7.0.0\ncollecting ... collected 17 items\n\ntests/test_extract.py::TestSpotifyAPISetup::test_spotify_api_setup_docker_env PASSED [  5%]\ntests/test_extract.py::TestSpotifyAPISetup::test_spotify_api_setup_"
+    },
+    {
+      "name": "Data Quality Tests",
+      "category": "Data Validation",
+      "success": true,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\\Users\\aanga\\Playlist Project\\venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: cov-7.0.0\ncollecting ... collected 21 items\n\ntests/test_data_quality.py::TestJSONSchemaValidation::test_empty_artists_array PASSED [  4%]\ntests/test_data_quality.py::TestJSONSchemaValidation::test_invalid"
+    },
+    {
+      "name": "Django Model Tests",
+      "category": "Backend Testing",
+      "success": true,
+      "output": "Found 4 test(s).\nOperations to perform:\n  Synchronize unmigrated apps: messages, staticfiles\n  Apply all migrations: admin, auth, contenttypes, dashboard, sessions\nSynchronizing apps without migrations:\n  Creating tables...\n    Running deferred SQL...\nRunning migrations:\n  Applying contenttypes.0001_initial... OK\n  Applying auth.0001_initial... OK\n  Applying admin.0001_initial... OK\n  Applying admin.0002_logentry_remove_auto_add... OK\n  Applying admin.0003_logentry_add_action_flag_choices... OK\n"
+    },
+    {
+      "name": "Django View Tests",
+      "category": "Integration Testing",
+      "success": true,
+      "output": "Found 5 test(s).\nOperations to perform:\n  Synchronize unmigrated apps: messages, staticfiles\n  Apply all migrations: admin, auth, contenttypes, dashboard, sessions\nSynchronizing apps without migrations:\n  Creating tables...\n    Running deferred SQL...\nRunning migrations:\n  Applying contenttypes.0001_initial... OK\n  Applying auth.0001_initial... OK\n  Applying admin.0001_initial... OK\n  Applying admin.0002_logentry_remove_auto_add... OK\n  Applying admin.0003_logentry_add_action_flag_choices... OK\n"
+    },
+    {
+      "name": "Test Coverage Report",
+      "category": "Coverage Analysis",
+      "success": true,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\\Users\\aanga\\Playlist Project\\venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: cov-7.0.0\ncollecting ... collected 38 items\n\ntests/test_data_quality.py::TestJSONSchemaValidation::test_empty_artists_array PASSED [  2%]\ntests/test_data_quality.py::TestJSONSchemaValidation::test_invalid"
+    }
+  ],
+  "summary": {
+    "total_test_suites": 5,
+    "successful_suites": 5,
+    "failed_suites": 0,
+    "estimated_total_tests": 76,
+    "estimated_passed_tests": 76,
+    "test_categories": [
+      "Coverage Analysis",
+      "Data Validation",
+      "Backend Testing",
+      "Integration Testing",
+      "Unit Testing"
+    ]
+  }
+}

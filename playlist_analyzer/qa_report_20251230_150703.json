@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-12-30T15:07:01.189315",
+  "project": "Spotify Playlist Analyzer",
+  "test_suites": [
+    {
+      "name": "ETL Unit Tests",
+      "category": "Unit Testing",
+      "success": false,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.3.2, pluggy-1.5.0 -- C:\\Users\\aanga\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: anyio-4.5.2, mock-3.14.1, time-machine-2.15.0\ncollecting ... collected 0 items\n\n============================== warnings summary ===============================\n..\\..\\AppData\\Local\\Programs\\Pytho"
+    },
+    {
+      "name": "Data Quality Tests",
+      "category": "Data Validation",
+      "success": false,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.12.3, pytest-8.3.2, pluggy-1.5.0 -- C:\\Users\\aanga\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\ncachedir: .pytest_cache\nrootdir: C:\\Users\\aanga\\Playlist Project\nconfigfile: pytest.ini\nplugins: anyio-4.5.2, mock-3.14.1, time-machine-2.15.0\ncollecting ... collected 0 items\n\n============================== warnings summary ===============================\n..\\..\\AppData\\Local\\Programs\\Pytho"
+    },
+    {
+      "name": "Django Model Tests",
+      "category": "Backend Testing",
+      "success": false,
+      "output": ""
+    },
+    {
+      "name": "Django View Tests",
+      "category": "Integration Testing",
+      "success": false,
+      "output": ""
+    },
+    {
+      "name": "Test Coverage Report",
+      "category": "Coverage Analysis",
+      "success": false,
+      "output": ""
+    }
+  ],
+  "summary": {
+    "total_test_suites": 5,
+    "successful_suites": 0,
+    "failed_suites": 5,
+    "estimated_total_tests": 0,
+    "estimated_passed_tests": 0,
+    "test_categories": [
+      "Integration Testing",
+      "Data Validation",
+      "Backend Testing",
+      "Unit Testing",
+      "Coverage Analysis"
+    ]
+  }
+}
