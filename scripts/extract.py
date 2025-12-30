@@ -14,15 +14,26 @@ load_dotenv()
 
 
 def spotify_api_setup():
-    env_mode = os.getenv("ENV_MODE", "local") 
-    if env_mode == "docker":
-        dotenv_path = ".env.docker"
-    else:
-        dotenv_path = ".env.local"
+    # Get the project root directory (parent of 'scripts' directory)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
 
-    load_dotenv(dotenv_path=dotenv_path)
+    env_mode = os.getenv("ENV_MODE", "local")
+    if env_mode == "docker":
+        dotenv_path = os.path.join(project_root, ".env.docker")
+    else:
+        dotenv_path = os.path.join(project_root, ".env.local")
+
+    print(f"Debug - Loading env from: {dotenv_path}")
+    print(f"Debug - File exists: {os.path.exists(dotenv_path)}")
+
+    load_dotenv(dotenv_path=dotenv_path, override=True)
     client_id = os.getenv('SPOTIPY_CLIENT_ID')
     client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
+
+    print(f"Debug - client_id: {client_id}")
+    print(f"Debug - client_secret: {client_secret}")
+
     credentials = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
     sp = spotipy.Spotify(client_credentials_manager=credentials)
     return sp

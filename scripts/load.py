@@ -6,12 +6,16 @@ from dotenv import load_dotenv
 from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 import json
 
+# Get the project root directory (parent of 'scripts' directory)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+
 env_mode = os.getenv("ENV_MODE", "local")  # 기본값은 local
 
 if env_mode == "docker":
-    dotenv_path = ".env.docker"
+    dotenv_path = os.path.join(project_root, ".env.docker")
 else:
-    dotenv_path = ".env.local"
+    dotenv_path = os.path.join(project_root, ".env.local")
 
 load_dotenv(dotenv_path=dotenv_path)
 
