@@ -1,49 +1,64 @@
-from unittest import result
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Playlist
+from .models import Playlist, Track
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
 import os
 import sys
-import pandas as pd
-import sqlite3
-import ast
-from django.conf import settings
-from sqlalchemy import create_engine
-from django.contrib.auth.decorators import login_required
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
 
-
 from scripts.extract import spotify_api_setup, extract_playlist_tracks
 from scripts.transform import transform_playlist_df
 
-SQLITE_DB_FILE = os.path.join(settings.BASE_DIR, "webData", "playlist_data.db")
-SQLITE_ENGINE = create_engine(f"sqlite:///{SQLITE_DB_FILE}")
+def load_tracks_to_db(df, playlist_obj):
+    """
+    Load tracks from dataframe to Django ORM using bulk operations
+    Uses get_or_create to avoid duplicates (UPSERT-like behavior)
+    """
+    tracks_to_create = []
 
-def load_to_sqlite(df, table_name="playlist_tracks"):
+    for _, row in df.iterrows():
+        # Check if track already exists for this playlist
+        existing_track = Track.objects.filter(
+            playlist=playlist_obj,
+            track_id=row['track_id']
+        ).first()
 
-    def safe_parse(x):
-        if isinstance(x, list):
-            return x
-        try:
-            import ast
-            return ast.literal_eval(x)
-        except:
-            return []
+        if existing_track:
+            # Update existing track
+            existing_track.track_name = row['track_name']
+            existing_track.track_duration_ms = int(row['track_duration_ms'])
+            existing_track.track_popularity = int(row.get('track_popularity', 0))
+            existing_track.track_genres = row['track_genres'] if isinstance(row['track_genres'], list) else []
+            existing_track.album_id = row['album_id']
+            existing_track.album_name = row['album_name']
+            existing_track.album_release_date = row.get('album_release_date')
+            existing_track.album_label = row.get('album_label', '')
+            existing_track.artist_ids = row['artist_ids'] if isinstance(row['artist_ids'], list) else []
+            existing_track.artist_names = row['artist_names'] if isinstance(row['artist_names'], list) else []
+            existing_track.save()
+        else:
+            # Create new track
+            tracks_to_create.append(Track(
+                playlist=playlist_obj,
+                track_id=row['track_id'],
+                track_name=row['track_name'],
+                track_duration_ms=int(row['track_duration_ms']),
+                track_popularity=int(row.get('track_popularity', 0)),
+                track_genres=row['track_genres'] if isinstance(row['track_genres'], list) else [],
+                album_id=row['album_id'],
+                album_name=row['album_name'],
+                album_release_date=row.get('album_release_date'),
+                album_label=row.get('album_label', ''),
+                artist_ids=row['artist_ids'] if isinstance(row['artist_ids'], list) else [],
+                artist_names=row['artist_names'] if isinstance(row['artist_names'], list) else []
+            ))
 
-    df["artist_names"] = df["artist_names"].apply(safe_parse)
-    df["track_genres"] = df["track_genres"].apply(safe_parse)
-    df["artist_ids"] = df["artist_ids"].apply(safe_parse)
-
-   
-    df["artist_names"] = df["artist_names"].apply(lambda x: ", ".join(x))
-    df["track_genres"] = df["track_genres"].apply(lambda x: ", ".join(x))
-    df["artist_ids"] = df["artist_ids"].apply(lambda x: ", ".join(x))
-
-    conn = sqlite3.connect(SQLITE_DB_FILE)
-    df.to_sql(table_name, conn, if_exists="append", index=False)
-    conn.close()
+    # Bulk create new tracks
+    if tracks_to_create:
+        Track.objects.bulk_create(tracks_to_create, ignore_conflicts=True)
 
 
 def index(request):
@@ -53,49 +68,21 @@ def analyze_playlist(request):
     if request.method == 'POST':
         playlist_url = request.POST.get('url')
         playlist_id = playlist_url.split("/")[-1].split("?")[0]
-        
-        # Extract
-        sp = spotify_api_setup()
-        raw_df, metadata = extract_playlist_tracks(sp, playlist_id)
-        
-        # Transform
-        clean_df = transform_playlist_df(raw_df)
-        clean_df["source_playlist_id"] = playlist_id
-        clean_df["playlist_name"] = metadata["name"]
-        clean_df["playlist_owner"] = metadata["owner"]
-        
-        if request.user.is_authenticated:
-            clean_df["user_id"] = request.user.id
-        else:
-            clean_df["user_id"] = None
-    
 
-        print("--- Debugging clean_df before load ---")
-        print(clean_df["artist_names"].head())
-        print(clean_df["artist_names"].apply(type).value_counts())
-        print(clean_df["artist_names"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
+        # Check if user is authenticated (required for now)
+        if not request.user.is_authenticated:
+            return HttpResponse("You must be logged in to analyze playlists", status=403)
 
-        print(clean_df["track_genres"].head())
-        print(clean_df["track_genres"].apply(type).value_counts())
-        print(clean_df["track_genres"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
+        try:
+            # Extract from Spotify API
+            sp = spotify_api_setup()
+            raw_df, metadata = extract_playlist_tracks(sp, playlist_id)
 
-        print(clean_df["artist_ids"].head())
-        print(clean_df["artist_ids"].apply(type).value_counts())
-        print(clean_df["artist_ids"].apply(lambda x: [type(item) for item in x if not isinstance(item, str)]).explode().value_counts())
-        
-       
-        # Save locally
-        os.makedirs(os.path.join(settings.BASE_DIR, "webData"), exist_ok=True) # Ensure path is absolute
-        clean_df.to_csv(os.path.join(settings.BASE_DIR, f"webData/{playlist_id}_cleaned.csv"), index=False) # Ensure path is absolute
+            # Transform the data
+            clean_df = transform_playlist_df(raw_df)
 
-
-        # Load to SQLite
-        load_to_sqlite(clean_df, table_name="web_playlist_tracks")
-        
-        if request.user.is_authenticated:
-            # Save to user's playlist model
-            from .models import Playlist
-            playlist, created = Playlist.objects.get_or_create(
+            # Get or create playlist object
+            playlist_obj, created = Playlist.objects.get_or_create(
                 user=request.user,
                 playlist_id=playlist_id,
                 defaults={
@@ -106,98 +93,102 @@ def analyze_playlist(request):
                     'playlist_description': metadata.get("description", "")
                 }
             )
+
             if not created:
-                # Update existing playlist
-                playlist.playlist_url = playlist_url
-                playlist.playlist_name = metadata["name"]
-                playlist.playlist_owner = metadata["owner"]
-                playlist.save()
+                # Update existing playlist metadata
+                playlist_obj.playlist_url = playlist_url
+                playlist_obj.playlist_name = metadata["name"]
+                playlist_obj.playlist_owner = metadata["owner"]
+                playlist_obj.playlist_image = metadata.get("image", "")
+                playlist_obj.playlist_description = metadata.get("description", "")
+                playlist_obj.save()
 
-        return redirect('dashboard:dashboard', playlist_id=playlist_id)
-    return HttpResponse("invalid method", status=405)
+            # Save locally as backup (optional)
+            os.makedirs(os.path.join(settings.BASE_DIR, "webData"), exist_ok=True)
+            clean_df.to_csv(os.path.join(settings.BASE_DIR, f"webData/{playlist_id}_cleaned.csv"), index=False)
 
-from sqlalchemy import create_engine
-from dotenv import load_dotenv
+            # Load tracks to database using Django ORM
+            load_tracks_to_db(clean_df, playlist_obj)
+
+            return redirect('dashboard:dashboard', playlist_id=playlist_id)
+
+        except Exception as e:
+            import traceback
+            error_msg = f"Error analyzing playlist: {str(e)}<br><pre>{traceback.format_exc()}</pre>"
+            return HttpResponse(error_msg, status=500)
+
+    return HttpResponse("Invalid method", status=405)
+
 
 @login_required
 def user_playlists(request):
-    playlists = Playlist.objects.filter(user=request.user)
+    """Display all playlists for the current user"""
+    playlists = Playlist.objects.filter(user=request.user).order_by('-created_at')
     return render(request, "dashboard/user_playlists.html", {"playlists": playlists})
-    
-# DASHBOARD
+
 
 def dashboard(request, playlist_id):
+    """
+    Display dashboard for a specific playlist
+    Now uses Django ORM instead of raw SQLite queries
+    """
     try:
-        with SQLITE_ENGINE.connect() as connection: #Get a connection from the engine
-            from sqlalchemy import text # Import text from sqlalchemy for parameterized queries
-            sql_query = text("""
-                SELECT * FROM web_playlist_tracks 
-                WHERE source_playlist_id = :playlist_id AND user_id = :user_id
-            """)
-            
-            result = connection.execute(sql_query, {
-                "playlist_id": playlist_id,
-                "user_id": request.user.id
+        # Get the playlist object
+        playlist_obj = Playlist.objects.filter(
+            user=request.user,
+            playlist_id=playlist_id
+        ).first()
+
+        if not playlist_obj:
+            return HttpResponse("Playlist not found. Please analyze it first.", status=404)
+
+        # Get all tracks for this playlist using Django ORM
+        tracks = Track.objects.filter(playlist=playlist_obj).select_related('playlist')
+
+        if not tracks.exists():
+            return HttpResponse("No tracks found. Please re-analyze the playlist.", status=404)
+
+        # Calculate top artists
+        from collections import Counter
+        artist_counter = Counter()
+        genre_counter = Counter()
+
+        track_data = []
+        for track in tracks:
+            # Count artists
+            for artist in track.artist_names:
+                artist_counter[artist] += 1
+
+            # Count genres
+            for genre in track.track_genres:
+                genre_counter[genre] += 1
+
+            # Prepare track data for template
+            track_data.append({
+                'track_name': track.track_name,
+                'artist_names': track.artist_names,
+                'album_name': track.album_name,
+                'track_popularity': track.track_popularity,
+                'track_duration_sec': track.track_duration_ms / 1000,
+                'track_genres': track.track_genres
             })
-            
-            
-            df = pd.DataFrame(result.fetchall(), columns=result.keys()) #Create DataFrame from fetched results
 
-        def parse_str_to_list(x):
-            if isinstance(x, str):
-                return [item.strip() for item in x.split(',') if item.strip()] # Split by comma, strip spaces, remove empty strings
-            return [] # Return empty list if not a string (e.g., NaN)
-        
-        df["artist_names"] = df["artist_names"].apply(parse_str_to_list)
-        df["track_genres"] = df["track_genres"].apply(parse_str_to_list)
-        df["artist_ids"] = df["artist_ids"].apply(parse_str_to_list)
+        # Get top 10 artists and genres
+        top_artists = dict(artist_counter.most_common(10))
+        top_genres = dict(genre_counter.most_common(10))
 
-        top_artists = (
-            # Flatten the lists of values
-            df.explode("artist_names")["artist_names"]
-            .value_counts()
-            .head(10)
-            .to_dict()
-        )
-        
-        top_genres = (
-            df.explode("track_genres")["track_genres"]
-            .value_counts()
-            .head(10)
-            .to_dict()
-        )
-        
-        track_table = df[["track_name", "artist_names", "album_name", "track_popularity", "track_duration_sec", "track_genres"]].to_dict(orient="records")
-        
-        # Metadata from the first row
-        playlist_name = df["playlist_name"].iloc[0] if "playlist_name" in df else ""
-        playlist_owner = df["playlist_owner"].iloc[0] if "playlist_owner" in df else ""
-        
         context = {
             "top_artists": top_artists,
             "top_genres": top_genres,
-            "track_count": len(df),
-            "playlist_name": playlist_name,
-            "playlist_owner": playlist_owner,
-            "track_table": track_table
+            "track_count": len(track_data),
+            "playlist_name": playlist_obj.playlist_name,
+            "playlist_owner": playlist_obj.playlist_owner,
+            "track_table": track_data
         }
-        
+
         return render(request, "dashboard/dashboard.html", context)
-    
+
     except Exception as e:
         import traceback
-        return HttpResponse(f"Error: {str(e)}<br>{traceback.format_exc()}")
-
-from django.http import JsonResponse
-
-def debug_playlist_ids(request):
-    try:
-        with SQLITE_ENGINE.connect() as connection:
-            from sqlalchemy import text
-            query = text("SELECT DISTINCT source_playlist_id FROM web_playlist_tracks")
-            result = connection.execute(query)
-            ids = [row[0] for row in result.fetchall()]
-        return JsonResponse({"playlist_ids": ids})
-    except Exception as e:
-        import traceback
-        return HttpResponse(f"Error: {str(e)}<br>{traceback.format_exc()}")
+        error_msg = f"Error loading dashboard: {str(e)}<br><pre>{traceback.format_exc()}</pre>"
+        return HttpResponse(error_msg, status=500)
