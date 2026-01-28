@@ -5,6 +5,10 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 import os
 import sys
+import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -61,6 +65,47 @@ def load_tracks_to_db(df, playlist_obj):
         Track.objects.bulk_create(tracks_to_create, ignore_conflicts=True)
 
 
+def trigger_airflow_dag(playlist_id):
+    """
+    Trigger Airflow DAG to load playlist data into the data warehouse
+    This runs in the background - Django doesn't wait for it
+    """
+    try:
+        airflow_url = os.getenv("AIRFLOW_API_URL", "http://localhost:8080")
+        airflow_user = os.getenv("AIRFLOW_USER", "airflow")
+        airflow_password = os.getenv("AIRFLOW_PASSWORD", "airflow")
+
+        dag_run_url = f"{airflow_url}/api/v1/dags/playlist_etl_dag/dagRuns"
+
+        payload = {
+            "conf": {
+                "playlist_id": playlist_id
+            }
+        }
+
+        response = requests.post(
+            dag_run_url,
+            json=payload,
+            auth=(airflow_user, airflow_password),
+            headers={"Content-Type": "application/json"},
+            timeout=5
+        )
+
+        if response.status_code in [200, 201]:
+            logger.info(f"Successfully triggered Airflow DAG for playlist {playlist_id}")
+            return True
+        else:
+            logger.warning(f"Failed to trigger Airflow DAG: {response.status_code} - {response.text}")
+            return False
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error triggering Airflow DAG: {str(e)}")
+        return False
+    except Exception as e:
+        logger.error(f"Unexpected error triggering Airflow DAG: {str(e)}")
+        return False
+
+
 def index(request):
     return render(request, 'dashboard/index.html')
 
@@ -109,6 +154,10 @@ def analyze_playlist(request):
 
             # Load tracks to database using Django ORM
             load_tracks_to_db(clean_df, playlist_obj)
+
+            # Trigger Airflow DAG to load data into the data warehouse
+            # This runs asynchronously - we don't wait for it
+            trigger_airflow_dag(playlist_id)
 
             return redirect('dashboard:dashboard', playlist_id=playlist_id)
 

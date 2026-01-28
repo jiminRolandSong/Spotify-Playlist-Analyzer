@@ -18,7 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 import os
 from dotenv import load_dotenv
-dotenv_path = os.path.join(BASE_DIR, '.env.local')
+# BASE_DIR is playlist_analyzer folder, go up one level to project root
+dotenv_path = os.path.join(BASE_DIR.parent, '.env.local')
 load_dotenv(dotenv_path=dotenv_path)
 
 
@@ -84,8 +85,12 @@ WSGI_APPLICATION = 'playlist_analyzer.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'playlist_db'),
+        'USER': os.getenv('DB_USER', 'airflow'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'airflow'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5433'),
     }
 }
 

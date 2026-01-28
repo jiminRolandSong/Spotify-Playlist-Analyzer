@@ -6,6 +6,8 @@ services:
       - POSTGRES_PASSWORD=airflow
       - POSTGRES_DB=airflow
       - ENV_MODE=docker
+    ports:
+      - "5433:5432"
     networks:
       - airflow-net
     volumes:
@@ -25,6 +27,7 @@ services:
       - AIRFLOW__CORE__FERNET_KEY=ss5TtELN0BFLuTxecZuJLbQ3xNlviJfD8dEcowW34ug=
       - _PIP_ADDITIONAL_REQUIREMENTS=spotipy pandas python-dotenv psycopg2-binary
       - AIRFLOW__WEBSERVER__SECRET_KEY=zHxNBLQ2oGe_64Pw7jSFZUvLBbiXH2Ix1pU7RB_97p4
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth
     networks:
       - airflow-net
     ports:

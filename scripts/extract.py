@@ -93,7 +93,7 @@ def extract_playlist_tracks(sp, playlist_id):
     return pd.DataFrame(all_tracks), playlist_metadata
 
 def extract_data():
-    playlist_id = "2wazkzhuzpipWcVKjOa7Vg" 
+    playlist_id = "1ssFFcU1hlZnKgNnDshd0F" 
     sp = spotify_api_setup()
     df_tracks, playlist_meta = extract_playlist_tracks(sp, playlist_id)
     os.makedirs("/opt/airflow/data", exist_ok=True)

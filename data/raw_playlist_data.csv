@@ -1,51 +1,104 @@
 track_id,track_name,track_duration_ms,track_popularity,track_genres,album_id,album_name,album_release_date,album_label,artist_ids,artist_names
-7JxHc4FNqdIzIJyrpqYAdH,Inside Our Hearts,234086,71,"['progressive house', 'edm', 'electronica']",1pUTJrfFFnXTWsyKe1Ixyh,Inside Our Hearts,2025-07-25,,"['60d24wfXkVzDSfLS6hyCjZ', '4AVFqumd2ogHFlRbKIjp1t', '4ukUyiEoZi8QxibfjuUsEw']","['Martin Garrix', 'Alesso', 'Shaun Farrugia']"
-5zF0TbsMKjIUQDrOhBfrvp,Flashlight,191279,32,"['uk r&b', 'future house', 'edm']",2k5PQdkNT1HHTuHsPwWwug,Flashlight,2025-08-08,,"['7MFJyevu6jq0shwDuVLymu', '3fnRJriX0WKnGVaNoPL7bI']","['Justin Mylo', 'RESPONS']"
-39pgWHKvgtSlvEI0AWvi62,Sleepless Nights,180422,58,"['edm', 'electronica', 'progressive trance', 'trance', 'progressive house']",7oqrJHKyfWOJGJqLSG4iDW,Sleepless Nights,2025-08-08,,"['0SfsnGyD8FpIN4U4WCkBZ5', '60d24wfXkVzDSfLS6hyCjZ', '0myPBTBG3ODlKVBEf5OSBe']","['Armin van Buuren', 'Martin Garrix', 'Libby Whitehouse']"
-0pDVZoDOubNxgzjgTvzVQi,Things I Haven’t Told You,156818,60,"['edm', 'dance', 'big beat']",1BVA2ZrleGhk13DKwSIJib,Things I Haven’t Told You,2025-08-08,,"['1Cs0zKBU1kc0i8ypK3B9ai', '5kwHgbzNHq1iHkUSrAmjjQ', '1pmwwNA38kkkJwEMWe8hLD']","['David Guetta', 'Audio Bullys', 'DJs From Mars']"
-3gJ16QEGGhLFPNLvbXgB1u,Losing Control,170270,54,"['techno', 'eurodance', 'hard house', 'acid techno', 'trance', 'hypertechno']",4x4LKLSlnUfLVCHKDmD9LV,Losing Control,2025-08-08,,"['0UMs6dTf23FC2fHc40fXNS', '0HHa7ZJZxUQlg5l2mB0N0f']","['KI/KI', 'Marlon Hoffstadt']"
-7vbb2B8iAtsbKShPYotwT5,Chiggy Chiggy,151939,42,"['eurodance', 'uk garage', 'hypertechno', 'hard house', 'trance']",4Fbhsl1yzuvuE7P76yAbKb,Chiggy Chiggy,2025-08-08,,"['50udUOTR7dQUgyPwPuCLM6', '6zBax4hSAI1BJYgwF61EP5']","['MALUGI', 'Inéz']"
-37oH9xWc26XDAgjiUXqEhB,Back 2 Me,171188,32,['stutter house'],133LjGRovXT6gsqDDp60Yz,Back 2 Me,2025-08-08,,['7iytrtzbCdACF9euDDHfiD'],['Ordley']
-3UlgMr1Uy7PBQNRLKFvFTN,Let's Ride Away - Joel Corry Remix,167467,54,"['edm', 'dance pop']",4TIyF7eDVIhtCrv8OM84sf,Let's Ride Away (Joel Corry Remix),2025-08-08,,"['1vCWHaC5f2uS3yhpwWbIA6', '6DgP9otnZw5z6daOntINxp', '3bhu7P5PfngueRHiB9hjcx']","['Avicii', 'Joel Corry', 'Elle King']"
-3F7lELsVpEUPKgiWbr1IsB,I'm Not Alone - Oliver Heldens & Centre Court Remix,176521,47,"['edm', 'future house', 'eurodance', 'hard house', 'house', 'trance']",50FgnqIuEEde6NSstSDG4v,I'm Not Alone (Oliver Heldens & Centre Court Remix),2025-08-07,,"['7CajNmpbOovFoOoasH2HaY', '5nki7yRhxgM509M5ADlN1p', '5CyxC6fwavhoRAf1n9n7wh']","['Calvin Harris', 'Oliver Heldens', 'Centre Court']"
-01VdA2SxfgaiBGb61AP5L0,Bendi (So Good),185693,30,"['eurodance', 'uk garage', 'hypertechno', 'hard house', 'trance']",3MyKmKk8IvDH6orgNbpxik,Bendi,2025-07-25,,"['38nG2aneQSUwlhbhXXZhxl', '4Zd4UkFH4ixGwkoC2rwigR']","['Benwal', 'Freddi']"
-5dv2jjdxdwsnbRtJnQXaFT,Don't Let Me Go - Radio Mix,170375,36,"['tech house', 'disco house', 'latin house', 'funky house']",6xTiUPA4FuJ1qoVYtI8xWk,Don't Let Me Go (Radio Mix),2025-08-01,,"['08st4VKj9jjZJ5eKzAOHq8', '1dA7pt23MNLlDsLpABATtG']","['Piem', 'CASSIMM']"
-25HLKK4SyMaRcSU5s9ENig,Why Not,217440,46,"['brazilian bass', 'melodic house', 'indie dance', 'electronic', 'melodic techno']",3T3SOJ7tkywSCuIRCqJVOO,Why Not,2025-08-01,,"['4cdyqaBREB68H77QKCrKP1', '52rrjMiAC433F1mRLgWeVq']","['Dubdogz', 'Doriann']"
-6BYYvjaN4ASy2SkjTThwA1,Lighter - Hypaton Remix,136523,49,"['edm', 'azonto', 'dance', 'afro r&b', 'afropiano', 'afrobeats', 'afropop', 'afrobeat', 'afroswing']",6A0EgrbLG2AFttuuWJiQml,Lighter (Hypaton Remix),2025-08-08,,"['5Wg2b4Mp42gicxEeDNawf7', '1Cs0zKBU1kc0i8ypK3B9ai', '3tVQdUvClmAT7URs9V3rsp', '5GYaRwCWwhU6SIQrQ5G3b7']","['A7S', 'David Guetta', 'Wizkid', 'Hypaton']"
-570yVtPUvoxUYI0pN3o0qX,Control,180318,26,['tech house'],5QUACIGHeyuon8k4ARWdju,Control,2025-08-08,,"['1VnFvf8K01AoqryDdQzitv', '3r1crp6G0IKYW21wO5h7dB']","['Dansyn', 'HILLS']"
-6XIh9BtczdxO7HRQwrIPti,I Don't Trust A Soul,146059,57,"['bass house', 'stutter house']",1K34ZHVTpDsWUvvHjwfBQP,I Don't Trust A Soul,2025-08-06,,"['5Kmr0b3ip8g9P2i0dLTC3Z', '1ic0FHNGIjXZAWH6O6Reif']","['Disco Lines', 'Ship Wrek']"
-6qJhrI2BMuA8qHcmycD3fL,TESLA,186818,56,"['tech house', 'house']",2dOvYQS8loEBLISp9MNRNn,TESLA,2025-08-08,,['0w1sbtZVQoK6GzV4A4OkCv'],['Mau P']
-00kTtwFuoRVfFiH8wJabBu,Heavy,171093,63,"['melodic house', 'edm', 'electronica', 'progressive trance', 'trance', 'melodic techno', 'progressive house']",5U6bJLke6HXBUp6Q40caJN,Heavy,2025-07-25,,"['0SfsnGyD8FpIN4U4WCkBZ5', '3rOSOkPQ5PHYOiR7mvLTMA']","['Armin van Buuren', 'JOA']"
-58caScGqKTQIDDJQ7QnJU8,Cola - ARTBAT Remix,188160,51,"['melodic house', 'techno', 'tech house', 'house', 'melodic techno', 'progressive house']",3iLdjCAbObHpiYqZCvdByJ,Cola (ARTBAT Remix),2025-08-08,,"['240wlM8vDrf6S4zCyzGj2W', '2vf4pRsEY6LpL5tKmqWb64', '3BkRu2TGd2I1uBxZKddfg1']","['CamelPhat', 'Elderbrook', 'ARTBAT']"
-6OPopjRnpoCGU71lECUL4t,Somebody To Love,223994,47,[],5ZVcSrP8UZENH8D21iJYDG,Somebody To Love,2025-08-01,,['37czgDRfGMvgRiUKHvnnhj'],['Öwnboss']
-1OcV53oesLQw3VTW9I3uD3,Waterfalls (feat. Sam Harper & Bobby Harvey),120578,54,"['tech house', 'house']",1iEczV3pKJ9MPmRvYGB9bz,Waterfalls (feat. Sam Harper & Bobby Harvey),2025-08-08,,"['43BxCL6t4c73BQnIJtry5v', '0czTwfZBBvlvlOiypvDvwe', '2biXipa3IRLZUOnXgtKmXc']","['James Hype', 'Sam Harper', 'Bobby Harvey']"
-31ZI2g88tvVuIwaJnzSRDH,Yimanya - Skytech & Fafaq Remix,154642,9,"['big room', 'edm', 'afro house']",42SXeO6lfVNwqjsdWhMluf,Yimanya (Skytech & Fafaq Remix),2025-08-08,,"['7LujCZMWTBCuFqXmz118tH', '5hi0QkPvqk8a2ozP7NiYMW', '4CrDEHL7ysNabeYvL3xjUX', '0EK2nCt5jxbkN2HCmtKy4V']","['Adem Bogoceli', 'Farenthide', 'Skytech', 'Fafaq']"
-4wYTybPU1G7ZuXKjMdrn54,Papi,183528,55,"['techno', 'tech house', 'dembow']",21T52MdMD1iecNLNbMvBhg,Papi,2025-08-01,,"['5lVNSw2GPci8kebrAQpZqU', '2pm5MR0BU1dzvOd7ernZQc']","['Eli Brown', 'GeezLy']"
-25CkKDykVONgIgcGFAq4wJ,Broncho's Sandman,208600,12,"['melodic techno', 'techno', 'minimal techno']",1DhaYUCZMxpuS9eqEdxlJp,DC4 Vol. 1,2025-08-08,,"['4vyVLlQZTWLkuvSXaNMv4v', '6Lll1MPPak4m4vZKuJB264']","['Kaufmann (DE)', 'BRONCHO']"
-13O1dd0pQzohHTKVBzCo54,Voices In My Head - Amelie Lens Remix,192011,61,"['melodic house', 'hard techno', 'techno', 'acid techno', 'melodic techno', 'tekno', 'stutter house']",0Vuh5UNwqz3ObGMGhCiQr9,Voices In My Head (Amelie Lens Remix),2025-08-01,,"['4iBwchw0U0GZv5RfVYSMxN', '1NaQOKgddaJipUtmptb7GI', '4xG5i2Smlt6o5QxuGp9LqM', '5Ho1vKl1Uz8bJlk4vbmvmf']","['Anyma', 'Argy', 'Son of Son', 'Amelie Lens']"
-322yrwaIaTkmpGbuJ7nfev,KOALA,206616,53,"['techno', 'future house', 'house', 'acid techno']",0DY831aGA9JmyjcX6XI1Ls,KOALA,2025-08-01,,['0ETJQforv5OXgDgidQv9qd'],['HI-LO']
-1fLswHBorOi5ngm5CtUZ6w,We Are Free,276000,23,['techno'],5vebUxve6qmU4bud2y4Yze,We Are Free,2025-07-25,,['4bcymNfS8BzQ8XiwkdqCDb'],['SUDO']
-2OjR8cP6u4hoBBZaGa979t,Flashback,145774,33,"['progressive house', 'future house', 'big room']",0yBTW1VbM2xQd6nFUjNU85,Flashback,2025-08-01,,"['1CEqpjEq6n8O8zte6YvOTM', '5dHy2mDWei8fmwzE3fsrC3']","['Robbie Mendez', '2ACES']"
-3h4PEotApoBNp3G0qyUYqb,Thousand Miles,129000,7,['big room'],4HPJzN0EFD641R7CcVhO6P,Thousand Miles,2025-08-08,,"['2uTLykyg4Wk5zBw3Xttmsh', '5700ea7BYSV4Uv5qEPQDnx', '0wKjPDWq0TtaxVl1M87sVf']","['Steeper', 'Kohey', 'TRID3NT']"
-0Qe6yEMaWsmynN3eTA9Bxd,Wild Ride (Ryos Remix),184615,53,"['edm', 'electronica', 'slap house', 'big room', 'progressive house']",1RJOptnhicG5FsZRzpT5YF,Wild Ride (Ryos Remix),2025-08-01,,"['2wX6xSig4Rig5kZU6ePlWe', '7us9kFadl2fztbHSvlNk6M']","['KSHMR', 'Ryos']"
-5uJI9dtPY7WW2Yu1IaI2UV,Turn It Up,196992,35,"['progressive trance', 'big room', 'trance']",4id9M51bMSZFKERkQ9Tyup,Turn It Up,2025-08-01,,['3ePCIHipMKD4n8IBXBYWSm'],['Mark Sixma']
-40Efzt2tgbI5zQDpqIX0r3,Wiggle Wiggle,172846,58,"['big room', 'edm']",0gaLFKSq4FelacTHWNue6S,Wiggle Wiggle,2025-07-25,,"['6xQvQwZQQuq9R3TdPNbcR8', '3zXtPNCNWggzI962k6qxF1', '0iqVyGSUPFARPmkCuaV5Xp']","['Bassjackers', 'Stisema', 'Hula from the Outhere Brothers']"
-14fs9aj7LRPQtEnwuD8zMZ,Free Your Mind,153600,24,['big room'],3l920Oy8jeYAjw0eX9tSmT,Free Your Mind,2025-08-08,,['6hOrbqntEsgBVm4YstRyVR'],['LUSSO']
-7w0OLfAqXs05KpUU34ngWd,Rave Till My Grave,168000,61,"['edm', 'electronica', 'techno', 'hardstyle', 'big room', 'hypertechno', 'acid techno', 'frenchcore', 'hardcore', 'progressive house', 'hard techno']",24pocT8fPZICPOt99SR5rO,Rave Till My Grave,2025-08-01,,"['6BrvowZBreEkXzJQMpL174', '0RMeG9M8QFzss9bAbq99KA', '7iajTuviby3038TmfrpvZ3']","['Hardwell', 'Maddix', 'Villain']"
-5A5CbxniOX2JeZL72Qf0yd,Keep Me High,147695,45,"['hardstyle', 'aussie drill', 'frenchcore', 'trance', 'hardcore', 'progressive house', 'happy hardcore']",78NmoLq9IRdXxIoKl5efia,Keep Me High,2025-08-07,,"['1Wt63OMKtv6v2ivHuQLm2C', '3Bd1phrOZJuCev9U0bzdtA', '3rmYE7edorDWoKVPGk9iLZ', '75ZLyp0dI6PGiynBQS4rJp']","['Coone', 'Ben Nicky', 'Wasback', 'ALYSSA']"
-0oKPYa7P06v56FiA6y2lUZ,B2B,195000,50,"['gabber', 'italian trap', 'hardstyle', 'hardcore techno', 'frenchcore', 'hardcore']",5ljknZ8FjnJVINAp2Ap3Qn,B2B,2025-08-01,,"['51ltJZ6rB893AdzgCxSOV3', '2lpFs8QJyIeVDb2Sq4vZYi']","['Greg Willen', 'Rooler']"
-3MQgBKuopAqSNnMxiEkrDP,Fake Doctor,134709,47,"['techno', 'hardcore techno', 'acid techno', 'tekno', 'hard techno']",0xPTuONIi35VKETMxo9w3D,Fake Doctor,2025-07-22,,"['3QfhQkPft6Jj41lkVU2OvM', '6q4BufN5u0ChOMqqxzPgGU']","['Majes', 'KX CHR']"
-30lzJ9w2zXRKCoXUMu807i,LSD,236665,31,"['techno', 'hard techno']",2KMFGH2Kt6cBvIcqvjlDH8,LSD EP,2025-08-08,,['1ccmwHm4DPRPR12TZVWdu8'],['FOVOS']
-7mtVEFOOTZynHfKiKWc617,Bassline People,278216,53,"['techno', 'hardcore techno', 'acid techno', 'tekno', 'hard techno']",4IPoS9lJtbFTmtkScifnhX,Bassline People,2025-07-25,,"['6PNduxfJ9CVW1bVXUR16AD', '28DVBoEuAN6d6D6u83v2JP']","['BYØRN', 'VIDO']"
-7yZ21ZsAUHsoKQozwfrLo1,Milky Way,171870,45,"['techno', 'tekno', 'hard techno', 'hypertechno']",4UagjNEJgp7hg9O46irhE0,Milky Way,2025-08-08,,"['1r43wW70tnGUauQYvY5w48', '2gW0M5fn2r7Lo4Hn1r8HZ5']","['BENNETT', 'Creeds']"
-5We6RzgRTjvMrmQ6VQIAET,Come To Me,188354,14,"['techno', 'hard techno']",3NyHtXjwQXb4zsKM8dL2Bk,Come To Me,2025-08-08,,['7h7GP0dYKyRojU1lIt16QV'],['Victor Krum']
-1M9iHu4kjbfqiVwj7o8kZi,Heaven - Victor Krum Remix,359225,50,"['techno', 'hardcore techno', 'acid techno', 'tekno', 'hard techno']",3XS7YKaFGd0kZ62mOQeGa6,Heaven (Victor Krum Remix),2025-07-25,,"['7eILArMiTFTQf8SEh5fFHK', '7uS4z6GqvIIdZbVq327Ak9', '7h7GP0dYKyRojU1lIt16QV']","['Sara Landry', 'Alt8', 'Victor Krum']"
-2gfwU2cTsa3EMvtUzyEwxz,Booyah - Dr Phunk & Lockdown Rework,188948,44,"['edm', 'electronica', 'hardstyle', 'big room', 'hardcore', 'melbourne bounce']",1UUcfzaOpAYfrxouZO4cnz,Booyah (Dr Phunk & Lockdown Rework),2025-08-08,,"['3gk0OYeLFWYupGFRHqLSR7', '1naX4fxuRaDFlj9tGfIUZk', '11ESC6KI0jpdML0CijeROt', '2INDI0xc49oGYTZC7fBZjX', '3gTl4XARdQR2Sy59osG0Ia']","['Showtek', 'Dr Phunk', 'Lockdown', 'We Are Loud', 'Sonny Wilson']"
-0cTHDt1VKSrPEjVABsgYHG,Brazil,151504,51,"['hardstyle', 'schlagerparty', 'big room', 'frenchcore', 'hardcore', 'melbourne bounce']",2swhqbQntrFZ5EOWExzXYd,Brazil,2025-08-08,,"['7IFPeV5Ew63S7Hid0AjNgK', '4FDj6mh458K7m9Txwyj2rt', '0CbeG1224FS58EUx4tPevZ']","['Sound Rush', 'Harris & Ford', 'Timmy Trumpet']"
-3cORuDg2EzbAJvkrfb6NJm,Shot To The Brain,248770,56,"['speedcore', 'gabber', 'techno', 'hardstyle', 'hardcore techno', 'acid techno', 'frenchcore', 'hardcore', 'tekno', 'hard techno']",70Q9i1BZI8Z2t0Mdb8daDL,Shot To The Brain,2025-07-04,,"['4sQNUQjOYj9rV2sdfJ8laS', '6xenmpQHeDugzwDn9H2pSI']","['Angerfist', 'CARV']"
-4KVSKp7S4ftGGcKCdveeMz,Song 2,251612,36,"['techno', 'tekno', 'hard techno', 'acid techno']",5Q2cASSH57ej1pxZ2gwtvf,Song 2 & Get Over It,2025-07-04,,['3OyQ9AeMFgwKFHUgBOISww'],['FLKN']
-1MG8cpqSgt1Zf9tDi7vtIT,Loca,164107,24,"['hardcore', 'hardstyle', 'gabber']",48yJ54G9Lnf2NBxSw0adE7,Loca,2025-07-03,,['5lHeHJPYUJdDBXIApseBwO'],['Zany']
-16PrKgodBJIILRSgGr8Tfm,Molotov,209823,12,['hard techno'],7fBpS8XZZjGr69MkMT08ez,Molotov,2025-07-04,,"['6m2LwCmEzMpcZ6cRcWXjGj', '5UzI5YjsGVek6nAq4FQqPA']","['RK79', 'SCHIAVONI']"
-3fE4yPJSfjDK9OdFB0vDCX,GO HARD,179437,62,"['techno', 'hardstyle', 'hardcore techno', 'frenchcore', 'hardcore', 'tekno', 'hard techno']",5Ei1ezvFjBGEoBLTkOLHNj,GO HARD,2025-07-03,,"['5UG2ipdnA4vk8Eevkf1s06', '7E6DrjKJieOdJKO8mbwCMO']","['Holy Priest', 'D-Sturb']"
-3KF8goTts2ffoZ7iQTKjZ0,BIOHAZARD,295500,35,"['techno', 'tekno', 'hard techno', 'acid techno']",2ck4dVbpgPz5xJku18U5lB,BIOHAZARD,2025-07-11,,['24C1Z9RP71CzGmU1Dx3oTV'],['Franky-B']
-2imZwMeS2WLiPcgAbjo15T,Raving In The Studio (SOTA Remix),135428,51,"['drill', 'grime', 'uk grime', 'drum and bass', 'bassline', 'jungle', 'uk drill']",52JIuqcABYS0gq7DBUiWeH,Raving In The Studio (SOTA Remix),2025-08-01,,"['2PJEagPIxaBugeMjIyKVXF', '35dxfY1wywqVRUEaVuMm13', '78UYwUXnotbqcp2NTxjujP']","['Aitch', 'Bou', 'SOTA']"
+4uV4yldTUrYvHat6LiRZHl,Kawaii Kaiwai,153230,59,['anime'],1XHqGyZQTFzkomOfVttZtm,Kawaii Kaiwai,2025-07-04,,['0k24bjTbB2IUhV74mvSv4T'],['PiKi']
+2e9O02ZlmdCjwAjkkoFImN,Tell Me Tell Me ☆,208653,25,['anime'],36EiMQrnz9w1fac0YENNRd,Kawaii Kaiwai,2025-09-03,,['0k24bjTbB2IUhV74mvSv4T'],['PiKi']
+1k0JAiH11gHL9dc5dfQjQr,NOT CUTE ANYMORE,131997,88,['k-pop'],6wKHLrZczZAhDVsMEG4JXt,NOT CUTE ANYMORE,2025-11-24,,['36cgvBn0aadzOijnjjwqMN'],['ILLIT']
+4p0uVFAXKUISu8yp9gNtWE,Billyeoon Goyangi (Do the Dance),188641,79,['k-pop'],6tcKWEXikmRDB9KufEHvLp,bomb,2025-06-16,,['36cgvBn0aadzOijnjjwqMN'],['ILLIT']
+37tJnYWkIg3h6wRxtHZlWR,Sunday Morning,172191,46,['k-pop'],3rFGTY4rGdfpqjTE5kx8bE,Sunday Morning,2026-01-13,,['36cgvBn0aadzOijnjjwqMN'],['ILLIT']
+6IqEoBumGJPyESJAhwNMi3,Toki Yo Tomare,188124,47,['k-pop'],31H9k0JQ0gQBO0PbhP52w8,Toki Yo Tomare,2025-09-01,,['36cgvBn0aadzOijnjjwqMN'],['ILLIT']
+59vn9z2EUT8GStAdmDNf3y,Topping,166640,62,['k-pop'],41tisXYtO2LPc1kGG0kEKn,Topping,2025-08-10,,['36cgvBn0aadzOijnjjwqMN'],['ILLIT']
+3gpncpAgIWAd8ytN8qJ1QY,BEBE - Japanese ver.,179400,41,['k-pop'],5pC1tWolawhm5Ioig7hGMa,"Lover, Killer / BEBE (Japanese Ver.)",2025-06-04,,['01XYiBYaoMJcNhPokrg0l0'],['STAYC']
+6jYiHr12NVKLzn0X7K8aSK,FOCUS,177052,78,['k-pop'],0SVlu6q116wFO1m4EZ088b,FOCUS - The 1st Mini Album,2025-10-20,,['1ZLU77nRzQIaP23mVSYpCQ'],['Hearts2Hearts']
+30VFJSRmQ7iz31JrxEkuDA,Q&A,206000,27,['k-pop'],4gnxSTXmjuehY7XYKXWkZC,msnz <Beyond Beauty>,2025-11-24,,['5Z71xE9prhpHrqL5thVMyK'],['tripleS']
+49DTiFx70EuJLV7hDsCo6z,WE GO UP,186973,80,['k-pop'],2Accppyz0p8XZaSSCIAuDK,WE GO UP,2025-10-10,,['1SIocsqdEefUTE6XKGUiVS'],['BABYMONSTER']
+3sOAwRg5esaxDcWnUigWPv,0+0,192000,67,"['k-ballad', 'k-rock']",2DV7iVJ7L5DRQijgjyqLyQ,JAMONG SALGU CLUB,2025-08-04,,['5wVJpXzuKV6Xj7Yhsf2uYx'],['HANRORO']
+7sxUb59tfiuzagetBF47AN,"Even if you leave,",272000,57,"['k-ballad', 'k-rock']",4U0OHQ6lGmBsbY15DAtLGx,"Even if you leave,",2023-04-21,,['5wVJpXzuKV6Xj7Yhsf2uYx'],['HANRORO']
+3WvM2dIR9iIxMGNMP7WsNw,Landing in Love,165000,68,"['k-ballad', 'k-rock']",5NUuj9AlcNI1khPYJJAVtV,Take-off,2023-08-29,,['5wVJpXzuKV6Xj7Yhsf2uYx'],['HANRORO']
+3Qfjzd5Rd7xjlQBm5pGcuM,I'm happy,221000,51,"['k-ballad', 'k-rock']",5NUuj9AlcNI1khPYJJAVtV,Take-off,2023-08-29,,['5wVJpXzuKV6Xj7Yhsf2uYx'],['HANRORO']
+1fOzzOgVxAxDeVEmgmlZHw,一点点 - DJ版,187500,30,"['c-pop', 'drum and bass', 'mandopop', 'chinese hip hop', 'liquid funk', 'chinese r&b']",0UsSE0Nog1qsqRHGFkFgOe,一点点 (DJ版),2025-10-10,,"['0QwmLQKOeZobacsipWWvrT', '0nx6F0kN4McqlL648nTF4V', '37amnMKp6Y0BPiGNeaIjQc']","['董唧唧', '芊芊龍', 'Djah']"
+2M7g5EDUsMSSzQzxX6nBoJ,关山酒 - Dj名龙版,158095,40,"['c-pop', 'gufeng']",1KBFY7gZ1l6HajDITOiUvV,关山酒 (戏腔版),2023-12-06,,"['4xB7IggwEbvBcdRdZxWyQk', '0wpVFVMpkIMKev1k8scv28']","['平生不晚', '名龙']"
+4tnQucWQ3fW0A11Sfdx94W,Jumping Machine (跳楼机) - DJ阿布版,185234,47,"['c-pop', 'chinese r&b', 'mandopop']",0ZrCpc5hnI1DGwUH3UCCQM,Jumping Machine (跳楼机),2025-01-23,,['1xMn0bhYRWHDV01mU8gP1J'],['LBI利比']
+638OgDxV47nGpeNBbBTtSS,离开我的依赖 - DJ德朋版,214153,38,"['c-pop', 'chinese r&b', 'mandopop']",431Ex3YnkFw9Eb1aylMmIY,离开我的依赖,2025-09-04,,['3QCXgdYV5EgHesmUfxAEpk'],['cici_']
+2CPF5sLZe9RDte3sdXLlEf,探故知 - DJR7版,202714,0,"['c-pop', 'gufeng']",0VFT8xiUAtMY6xO7TAnSQQ,探故知 (DJR7版),2023-11-07,,['5N98rYrUBVIILXaNDLoEff'],['浅影阿']
+5HvSvJLvc6XjUU1rQxqBRT,难却 - DJ细霖版,204375,0,"['c-pop', 'gufeng']",4iRHMPg1licxXyJrsEUVz7,难却 (DJ版),2022-11-12,,['4xB7IggwEbvBcdRdZxWyQk'],['平生不晚']
+6jVMjyKSofa7zZX9tmAvaW,壁上观 - DJ亚明版,202500,44,"['c-pop', 'mandopop', 'gufeng']",7prcstEoN1Giezb0j0VMgr,壁上观,2024-08-26,,['78AY3Om5aSudpD4afaM6AI'],['邓寓君(等什么君)']
+6V5ulob6Dz5liUZbSolREN,鸳鸯戏 - Dj哈市小鹏版,187934,39,"['c-pop', 'gufeng']",4caQRbT1SrgUYwjgy85W64,鸳鸯戏 (DJ哈市小鹏版),2025-01-15,,"['5pNHyD7fcJhOWLzghri069', '5T9BWBpw4GiwFuN7WMsXbE']","['邓寓君(等什么君)', '小鵬']"
+06hhh87iJx0LLTjlf8qQOi,春庭雪 - DJ默涵版,212109,46,"['c-pop', 'mandopop', 'gufeng']",2iZErxB0Oh1DCyExNB7xci,春庭雪 (DJ默涵版),2024-01-26,,"['6stPrcreG671w8jLivyFQ6', '7CI4ZCPJxSkUDqmtnOYned']","['等什么君', '默涵']"
+66twnVBnWmAsNydpOv2ZyV,听夜雨 - DJ–lucky小阳版,174932,28,"['c-pop', 'chinese r&b', 'gufeng']",7Cg01lmfaSoa8j09emDsBL,听夜雨 (DJ–lucky小阳版),2025-06-06,,"['6ZdMglt39EkXuu6sDAacjM', '7sbmA7CdwzZQeNVCRjl53t']","['礼越', 'lucky小阳']"
+2IoQ0uhNOEI6K1EckMnDr7,风催雨 - DJ版,232634,35,['gufeng'],5uYXyX3JfF87Ko3iiUWVDS,风催雨 (DJlucky小阳版),2024-08-14,,"['2ET5rkAYnLXxa2aTg0vNvC', '0ku6r2syrTGu2oeG3Rz5et']","['费戚戚', 'DJlucky小阳']"
+4bOWb2OtPYZVhXWQ0BHVlO,风月 - Dj版,190666,12,[],3xSOH8aIBmHWplI1BZwAzv,风月 (Dj版),2025-05-07,,['0JfrxGQOdnHYZWBAtzPezD'],['Echo']
+6aB0wgEYFDb4Fkhn4paOau,未必（DJ鐵柱版）,178124,42,"['c-pop', 'vinahouse', 'mandopop']",3xGBkTMAgfzjGVmePpjy0N,未必（DJ鐵柱版）,2024-03-07,,['1A4zkf1qdAB7eu7sSTbkhD'],['言瑾羽']
+5qAfVxNUxjrELshgTpWxLf,OVERDRIVE,160000,74,['k-pop'],6RBnUYZIGKGDdgEnf3ta1U,TWS 4th Mini Album 'play hard',2025-10-13,,['4GgBKgxhc649frZDHcXIEz'],['TWS']
+59hVbgr8rfYkDbHfr8RcGI,IRIS OUT,151573,88,"['anime', 'j-rock', 'j-pop']",06re45NBDCPah74jnVOISQ,IRIS OUT,2025-09-15,,['1snhtMLeb2DYoMOcVbb8iB'],['Kenshi Yonezu']
+6RlkEHM3PohEge8Lfhe9Cs,アドレナ,185825,70,"['anime', 'j-pop']",2QgUUmu8JSrgsuacr6dI6x,アドレナ,2026-01-04,,['64tJ2EAv1R6UaZqc4iOCyj'],['YOASOBI']
+2N9miXnewVmUrgl6JSK1FI,SPAGHETTI,172313,88,"['k-rap', 'k-pop']",2yUrwTLHDWBrW74Ewuw6RX,SPAGHETTI,2025-10-24,,"['4SpbR6yFEvexJuaBpgAU5p', '0b1sIQumIAsNbqAoIClSpy']","['LE SSERAFIM', 'j-hope']"
+5H1sKFMzDeMtXwND3V6hRY,JUMP,164718,88,['k-pop'],3hzoZlx2KwtvJEUl9piPWr,JUMP,2025-07-11,,['41MozSoPIsD1dJM0CLPjZF'],['BLACKPINK']
+40UVUuyy5RfpO0awclCttA,FAMOUS,180353,73,['k-pop'],7rgnZ9iX2S9HFHmkFmSwW7,FAMOUS,2025-06-23,,['4gEMn0YPOdotLOygnk0Ng2'],['ALLDAY PROJECT']
+7hCdtQsaKCBXrITaPNK2iE,White Memories,181000,63,"['k-pop', 'bubblegum pop']",4vnA4ZWgxrhxy5doVCGv9u,White Memories,2025-12-02,,['24nUVBIlCGi4twz4nYxJum'],['fromis_9']
+5EoV2HmAlkqN1XvsIjOBZZ,STYLE,209671,76,['k-pop'],2bCF7O4JPKcxtlOw7AtphB,STYLE,2025-06-18,,['1ZLU77nRzQIaP23mVSYpCQ'],['Hearts2Hearts']
+0jnelJPBaLQcN5IearNmdi,Apple Pie,186258,67,['k-pop'],0SVlu6q116wFO1m4EZ088b,FOCUS - The 1st Mini Album,2025-10-20,,['1ZLU77nRzQIaP23mVSYpCQ'],['Hearts2Hearts']
+6a5ldLz6vKhUKHvQp1HxiN,Pretty Please,204322,55,['k-pop'],0SVlu6q116wFO1m4EZ088b,FOCUS - The 1st Mini Album,2025-10-20,,['1ZLU77nRzQIaP23mVSYpCQ'],['Hearts2Hearts']
+1lP4paUU6RuyAmK06jLT4K,Flutter,185244,61,['k-pop'],0SVlu6q116wFO1m4EZ088b,FOCUS - The 1st Mini Album,2025-10-20,,['1ZLU77nRzQIaP23mVSYpCQ'],['Hearts2Hearts']
+5y2Z9s6B997Y2SWDSzy50T,Fly Up,160000,33,['k-pop'],4gnxSTXmjuehY7XYKXWkZC,msnz <Beyond Beauty>,2025-11-24,,['5Z71xE9prhpHrqL5thVMyK'],['tripleS']
+7jp2VW62Yt2bDOaRas3hR6,PSYCHO,195409,80,['k-pop'],2Accppyz0p8XZaSSCIAuDK,WE GO UP,2025-10-10,,['1SIocsqdEefUTE6XKGUiVS'],['BABYMONSTER']
+22HT28Iy68Sek9XbO1gkOB,だだだ、だって。,250146,37,[],0AtLTw8CXfk9m1vPU9sVje,初恋シンデレラ,2024-10-16,,['0CXdxGaAia8vQLHVRFXW8a'],['≒JOY']
+42J94dnS3YLChzMQqGLMA4,ブルーハワイレモン,257933,49,[],6vCm4g9aamnlgOLCH2B4gX,ブルーハワイレモン,2025-05-05,,['0CXdxGaAia8vQLHVRFXW8a'],['≒JOY']
+1F2xgtYygqQjC1ZSPJvYtt,夢見る♡アイドル,241773,40,[],3LItA3vQfhIIrpbY7JWiEH,体育館ディスコ,2024-06-12,,['0CXdxGaAia8vQLHVRFXW8a'],['≒JOY']
+37CQ5Pdjor06fW2XUmcNMw,初恋シンデレラ,275400,43,[],2hw5ni5aMLyNcbQPBTNH4u,初恋シンデレラ,2024-09-04,,['0CXdxGaAia8vQLHVRFXW8a'],['≒JOY']
+6ISuWa8qPgszUSmnNA8rw7,いま、月は満ちる,282748,42,[],3XnJgUHouB4WUbC5BLwr1b,いま、月は満ちる,2025-08-17,,['0CXdxGaAia8vQLHVRFXW8a'],['≒JOY']
+6XEp7oqXd6dpT9sZPpG4NB,今、恋をしている,245602,41,[],23fWGs6o8eUCKhooSeaGGP,今、恋をしている,2025-08-27,,['0CXdxGaAia8vQLHVRFXW8a'],['≒JOY']
+2pk7dscW82XhsVQ6bHXHKj,好きだよとどっちが先に言うのか?,250194,13,[],4yGVXwRqoCm3IkuBlkxvnt,好きだよとどっちが先に言うのか?,2025-10-29,,['1ov2GNXK95X6AgVjzhrcDe'],['Rain Tree']
+41D1ENuAFImWBe1to0cVmb,つまり,261847,5,[],42PSUfSN4Kl9VhYdNW4xWJ,つまり,2025-05-28,,['1ov2GNXK95X6AgVjzhrcDe'],['Rain Tree']
+57YddLQCrn1VyEQFpZnGkc,あれはフェアリー,287343,36,['j-pop'],0HCUlTdKXb9NbrbA2KgIt2,あれはフェアリー,2025-11-15,,['0ZJdQMcIGWJn4Oh1O5Gku5'],['BOKUAO']
+66Ye5WX8DCuwR6GIcA7BgN,"More, Sparkly",217333,24,[],5CUHbDT9b7V5zzwMvkqjns,"More, Sparkly",2025-12-08,,['573r1p29tKPr2KNUNZkPww'],['MORE STAR']
+3k9s22FI0iGikPaRarekLG,Kiss Me Pattisier,216000,33,['j-pop'],5IBV570oJuOz3U7GXctW14,CANDY TUNE,2023-03-07,,['4Yq4M6kdQTjkPBOp7aPJrA'],['CANDY TUNE']
+21Voc0YrTGCItgMhvJVtwo,"Call me, Tell me",204666,21,[],6t7WjXzag8z1H6tBCuVC4X,"Call me, Tell me",2024-05-24,,['1UyIqMBjk0DMexWtQF2X1i'],['SWEET STEADY']
+0VngDhsGDiCHcx6r5fwXN7,KAWAII COLLECTION,218502,23,[],0lb7qQ1PO6Un4M0M4stvmc,KAWAII COLLECTION,2025-11-04,,['1UyIqMBjk0DMexWtQF2X1i'],['SWEET STEADY']
+4Re9Zb9uYlMtMiZy7HFFw5,Sukisugite METSU!,212400,48,['j-pop'],1hKC0UQuVBNgilSQEwKPbo,Sukisugite METSU!,2025-10-27,,['4jhJ8cnJ9vYKyCh289nuwQ'],['M!LK']
+5hVAQTNarrb3lmWqg9Ens4,Answer,246000,54,"['anime', 'j-pop']",6jWEkDAAvJ18hqR0QAR60B,Answer,2021-03-09,,['1qM11R4ylJyQiPJ0DffE9z'],['Lilas']
+5LM36azlFbguUgRCWBcDUn,Actor,230586,55,"['anime', 'j-pop']",0QmujzTxQFdS9zYbfJznnJ,Laugh,2025-12-10,,['1qM11R4ylJyQiPJ0DffE9z'],['Lilas']
+34K5AwOfWfQIx0fGSOHZmk,With,229680,39,"['anime', 'j-pop']",0QmujzTxQFdS9zYbfJznnJ,Laugh,2025-12-10,,['1qM11R4ylJyQiPJ0DffE9z'],['Lilas']
+51oqrSzw8jeWVSFgBAyAz9,Sign,260013,39,"['anime', 'j-pop']",0QmujzTxQFdS9zYbfJznnJ,Laugh,2025-12-10,,['1qM11R4ylJyQiPJ0DffE9z'],['Lilas']
+591fXk91OaNpI1mUbxhhnF,ハミング,219986,45,"['anime', 'j-pop']",0QmujzTxQFdS9zYbfJznnJ,Laugh,2025-12-10,,['1qM11R4ylJyQiPJ0DffE9z'],['Lilas']
+1SACqklcRnmM3xrtCFAjWy,DREAMER,247333,39,"['anime', 'j-pop']",0QmujzTxQFdS9zYbfJznnJ,Laugh,2025-12-10,,['1qM11R4ylJyQiPJ0DffE9z'],['Lilas']
+46LSraL1efyLHbM5DehGtN,Casket Girl,245157,63,['j-pop'],6ELurkxQnAif7u5Vv6Wly9,Prema,2025-09-05,,['6bDWAcdtVR3WHz2xtiIPUi'],['Fujii Kaze']
+45uzEq3hAOy8uayrvDLY2C,Love Like This,260778,63,['j-pop'],6ELurkxQnAif7u5Vv6Wly9,Prema,2025-09-05,,['6bDWAcdtVR3WHz2xtiIPUi'],['Fujii Kaze']
+3Aj0zsny1zlTLevRxfEEKc,Hachikō,270497,64,['j-pop'],6ELurkxQnAif7u5Vv6Wly9,Prema,2025-09-05,,['6bDWAcdtVR3WHz2xtiIPUi'],['Fujii Kaze']
+3K0Xr4N0ccBKqBBHDARIFy,Forever Young,353639,59,['j-pop'],6ELurkxQnAif7u5Vv6Wly9,Prema,2025-09-05,,['6bDWAcdtVR3WHz2xtiIPUi'],['Fujii Kaze']
+3hBAYbAECEix9raaTq8S3H,ヒロイン,269786,76,"['j-rock', 'j-pop']",6TrqbAJxtGl4HWK5SUbFLT,シャンデリア,2015-12-09,,['6rs1KAoQnFalSqSU4LTh8g'],['back number']
+5P8ZvBQoCrujjNcLAxO3Su,クリスマスソング,340080,75,"['j-rock', 'j-pop']",6TrqbAJxtGl4HWK5SUbFLT,シャンデリア,2015-12-09,,['6rs1KAoQnFalSqSU4LTh8g'],['back number']
+3QIAwtEEDOrv0g5NKCGrXZ,花束,286053,77,"['j-rock', 'j-pop']",4x70QIHYGdMgV9rRgByZbI,スーパースター,2011-10-26,,['6rs1KAoQnFalSqSU4LTh8g'],['back number']
+4GqO80eGXA542oTvlYv4LS,ハッピーエンド,314280,76,"['j-rock', 'j-pop']",756KBTfY0YiHQNkg3UJhR6,ハッピーエンド,2016-11-16,,['6rs1KAoQnFalSqSU4LTh8g'],['back number']
+0k4KaqElLVjdR6sVHPTS6h,君の恋人になったら,244066,71,"['j-rock', 'j-pop']",756KBTfY0YiHQNkg3UJhR6,ハッピーエンド,2016-11-16,,['6rs1KAoQnFalSqSU4LTh8g'],['back number']
+3KtwMkj9gml6BDeYlyS8nG,かわいいだけじゃだめですか？,251173,4,['j-pop'],1cJaqr9y6AvJqQgNpwVNRD,かわいいだけじゃだめですか？,2024-09-09,,['3PLCOySHJ9zwED5yZvDtPZ'],['CUTIE STREET']
+3eckILbWQWSBU0oP1FsMav,Can You Find Our Cuteness? -Kawaii Sagashite Kuremasuka?-,211133,34,['j-pop'],5LiTR4IhZWimNIejpCEuy1,Can You Find Our Cuteness? -Kawaii Sagashite Kuremasuka?- / Song of CUTIE STREET,2025-08-27,,['3PLCOySHJ9zwED5yZvDtPZ'],['CUTIE STREET']
+7uauGYNMQm1ABcSsNSp3R4,ひたむきシンデレラ！,227866,1,['j-pop'],6PzbN3SKc1wp74WXaR995k,かわいいだけじゃだめですか？,2024-11-13,,['3PLCOySHJ9zwED5yZvDtPZ'],['CUTIE STREET']
+45cgm5BDD5vtsMgMdhwsh9,LOVE TRAIN,198800,16,['j-pop'],4VEOsM0oIFySRQb7BkFpsB,LOVE TRAIN,2025-02-26,,['3PLCOySHJ9zwED5yZvDtPZ'],['CUTIE STREET']
+7JAdLtxxiLW2NifgWeMV51,The project of the earth-makeup,182158,16,['j-pop'],47NVTGdbgYxN3elvirhoMY,The project of the earth-makeup,2025-04-16,,['3PLCOySHJ9zwED5yZvDtPZ'],['CUTIE STREET']
+6oqCXlVFPAbfb9F8ItK8nN,We can't stop suddenly!,222266,18,['j-pop'],6bs4gjolM89SwHvlw372JE,We can't stop suddenly!,2025-05-07,,['3PLCOySHJ9zwED5yZvDtPZ'],['CUTIE STREET']
+3BFx3IfjwIaUr0W5Bl1LED,劇上,198882,63,"['anime', 'j-pop']",2u1jyTGzYhnMNy495lVx8G,劇上,2025-10-02,,['64tJ2EAv1R6UaZqc4iOCyj'],['YOASOBI']
+72YttnPRxyHe8zCG50jYhj,NO BATIDÃO - Slowed,107933,88,"['phonk', 'brazilian phonk']",5kB03HrxWnYPPB9BvwbYG1,NO BATIDÃO,2025-09-05,,"['5tIkxADHN80ca0K6HCpWIt', '1M02J1PLobtQYok93DEvVa']","['ZXKAI', 'slxughter']"
+00zq8OHw9OJrpIiEGHHGKf,关山酒,233760,44,"['c-pop', 'mandopop', 'gufeng']",5jqkixKZWD0sNlB9tfROeE,关山酒,2019-09-16,,['5QbRsaaiD2Kl9CMuqzBIhW'],['小魂']
+72OVnXDzugvrCU25lMi9au,"如果可以 - 電影""月老""主題曲",274400,66,"['c-pop', 'chinese r&b', 'mandopop', 'taiwanese pop']",6CGKNcn63JbPWljHtQi1L0,"如果可以 (電影""月老""主題曲)",2021-11-05,,['7y3HnWCFEvWj4KM9GFSkiX'],['WeiBird']
+5Rzpn60KTM11EBETHaF9Kt,我会等,195483,63,"['c-pop', 'mandopop', 'taiwanese pop', 'chinese r&b']",3113SgaBiac1ta3gtRnyYk,我会等,2023-02-03,,['3ZYhFl4nztqc9vx35vKdUI'],['承桓']
+1XZE0InCx3SdCnLpVsPpZl,Jumping Machine (跳楼机),201642,74,"['c-pop', 'chinese r&b', 'mandopop']",0ZrCpc5hnI1DGwUH3UCCQM,Jumping Machine (跳楼机),2025-01-23,,['1xMn0bhYRWHDV01mU8gP1J'],['LBI利比']
+7KxyDLMxBQVu42vpRFLwzS,昨夜风今宵月,125333,62,"['c-pop', 'chinese r&b', 'mandopop', 'gufeng']",2hDWFGPLSZPptkewwjTKyJ,昨夜风今宵月,2025-06-19,,['28bpKXQug04TThfIWcDqfG'],['庄淇玟29']
+2ivEfdWLcYAHLgizTB0DoV,未必,193163,44,"['c-pop', 'vinahouse', 'mandopop']",4S0V9A7pUS21wSFgJUrwn3,未必,2024-01-11,,['1A4zkf1qdAB7eu7sSTbkhD'],['言瑾羽']
+6Se2CmNlRIisQjUkZIxWtk,离开我的依赖,207574,39,"['c-pop', 'chinese r&b', 'mandopop']",431Ex3YnkFw9Eb1aylMmIY,离开我的依赖,2025-09-04,,['3QCXgdYV5EgHesmUfxAEpk'],['cici_']
+14L7bSbRnV8qVx2maqEerm,風月,228589,51,"['c-pop', 'chinese r&b', 'mandopop', 'gufeng']",7EylDxLGezJsTcn9HwVV64,齡·EP,1970,,['6OAQlHABRwPJYVTkaSmiJ9'],['黃齡']
+6DxAkkf4f8C5LeRpS4GulJ,壁上观,252847,47,"['c-pop', 'mandopop', 'gufeng']",7prcstEoN1Giezb0j0VMgr,壁上观,2024-08-26,,['78AY3Om5aSudpD4afaM6AI'],['邓寓君(等什么君)']
+2xjFcZi3PgV3tLw1jdo52B,鸳鸯戏,213452,45,"['c-pop', 'gufeng']",4kn3mXopb5F48cd4lkEkFX,鸳鸯戏,2024-11-29,,['5pNHyD7fcJhOWLzghri069'],['邓寓君(等什么君)']
+5xce2w3Z3TqZQgnEWaYhOv,听夜雨,200307,46,"['c-pop', 'chinese r&b', 'gufeng']",0FIaze7Bltu1474dqbMvwR,听夜雨,2025-06-06,,['6ZdMglt39EkXuu6sDAacjM'],['礼越']
+2yV3wwlVGmGDA3Uz94x3Kq,难却,186666,45,"['c-pop', 'gufeng']",5a1chjfhQ26djNF69RRpWm,难却,2022-08-02,,['4xB7IggwEbvBcdRdZxWyQk'],['平生不晚']
+7j3y8Vixa5CULq5wmHybgd,春庭雪,240879,53,"['c-pop', 'mandopop', 'gufeng']",5hjWZx4tPtFtuYUJIb5vgU,春庭雪,2020-07-22,,['6stPrcreG671w8jLivyFQ6'],['等什么君']
+2IShEbI8pvFt65IzTKxIaH,探故知,201600,45,"['c-pop', 'gufeng']",6vimtBDLKtUAXGn4YFSNvd,探故知,2023-10-19,,['5N98rYrUBVIILXaNDLoEff'],['浅影阿']
+75Qun1t34fGbgvHPYDZy1D,寡城,234608,1,['mandopop'],7umJoVb5WnxnHLoQqYARVv,寡城,2024-02-23,,['44Z7F8aTmyWuqHonllvhnq'],['侯泽润']
+1iu78CCQRqFridShExLbSi,盗将行,198126,45,"['c-pop', 'chinese indie', 'mandopop', 'gufeng']",5KLTN6joyLZXWOhIMMkN6e,盗将行,2018-06-19,,"['148sD27V3Nr0XFl3TZNwmw', '1kAQfi76NXr3dwCZSkYFC7']","['花粥', '马雨阳']"
+4KV2qlzYfLo437r65PasfX,关山酒 - 戏腔版,225000,32,"['c-pop', 'gufeng']",1KBFY7gZ1l6HajDITOiUvV,关山酒 (戏腔版),2023-12-06,,['4xB7IggwEbvBcdRdZxWyQk'],['平生不晚']
+2vYVMOuyGuOQ1OhdITjnQe,伯虎说 - 卡点版,131000,55,"['c-pop', 'mandopop', 'gufeng']",2Xd27DW5i745qwDTLif3X1,伯虎说 (卡点版),2025-09-08,,"['7xzC31BgSOWsAvun3j2bSS', '0i6oXnPR78jPCTtBt7tNGv']","['伯爵Johnny', '唐伯虎Annie']"
+1g3o0n9ubLZlDKZq1sfI15,知我,292000,46,"['c-pop', 'gufeng']",6j09Loq25jwO8OHVIi0TbV,知我,2019-10-08,,['152pwp3eREIzPipk8gd9h5'],['哦漏']
+1ihC1wdthGSoMN8KmunuRB,知我 - 抒情版,260617,17,"['c-pop', 'gufeng']",3rMdJsc5fI6vynb9KKuwiQ,知我 (抒情版),2020-04-03,,['5vK7fosAmZpyGSaZJArxhU'],['尘ah']
+0CWAQlHsvfqcKJVVz9up2R,セレナーデ,219733,65,"['anime', 'j-pop']",5bPtxy1zsivShMZKJVrzfF,深海,2026-01-21,,['6WmXWHmfBMhupyIs8MSqtu'],['natori']
+6lanRgr6wXibZr8KgzXxBl,a thousand years,285120,85,['soft pop'],15yvc643iYfQtb6zh9NEJo,a thousand years,2011-10-18,,['7H55rcKCfwqkyDFH9wpKM6'],['Christina Perri']
+2RMR0ktNVX6KmpYTCc2TwL,ピンボール (Pinball),193000,46,['k-pop'],4wywAxm5NwYkpngq2hIFWj,ピンボール (Pinball),2026-01-21,,['5deOsjuFTKrNMJW3rKuL8S'],['RESCENE']
+0OgOvU69S4QuJYTMlIurn0,Before spring ends（在春天消失之前）,178142,63,"['chinese indie', 'chinese r&b']",1vg9EvdxxsKHFXkvPWN486,Before Spring Ends,2024-04-03,,"['21QQNTzqULHjiaDKaZepRP', '1i1GIYkaUE0jhxvSue4D6b']","['Wang OK', '李天责']"
+6vOOQuIrxAxSnHlEr0W5jy,ドレスコード,241133,45,['j-pop'],2eUg1Ua42nP4VkqADbbFgL,ドレスコード,2026-01-21,,['2aoUBwmHWln0JSEZbi9E70'],['にしな']

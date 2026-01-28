@@ -53,12 +53,14 @@ with DAG(
         playlist_id = context["dag_run"].conf.get("playlist_id", "")
         if not playlist_id:
             # Use default playlist ID if not provided
-            playlist_id = "7vhaamErffNetyvUgueBs3" 
+            playlist_id = "1ssFFcU1hlZnKgNnDshd0F"
             print(f"[INFO] No playlist_id passed. Using default: {playlist_id}")
         sp = spotify_api_setup()
         df, _ = extract_playlist_tracks(sp, playlist_id)
         df.to_csv(RAW_PATH, index=False)
         print(f"Extracted and saved {len(df)} tracks")
+        # Push playlist_id to XCom for downstream tasks
+        context["task_instance"].xcom_push(key="playlist_id", value=playlist_id)
 
     def transform_task():
         import pandas as pd
@@ -67,9 +69,11 @@ with DAG(
         transformed_df.to_csv(CLEAN_PATH, index=False)
         print(f"Transformed and saved {len(transformed_df)} records")
 
-    def load_task():
-        
+    def load_task(**context):
+        # Pull playlist_id from XCom
+        playlist_id = context["task_instance"].xcom_pull(task_ids="extract_playlist_data", key="playlist_id")
         df = pd.read_csv(CLEAN_PATH)
+        df['playlist_id'] = playlist_id
         load_to_postgreSQL(df, table_name="playlist_tracks")
         
     extract_op = PythonOperator(

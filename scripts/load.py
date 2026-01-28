@@ -29,7 +29,6 @@ print(f"🔧 Loaded config from: {dotenv_path}")
 print(f"📡 DB_HOST = {db_host}")
 
 
-
 # SQLAlchemy engine
 engine = create_engine(f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}")
 
