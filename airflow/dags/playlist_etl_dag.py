@@ -44,6 +44,7 @@ with DAG(
     default_args=default_args,
     description="Spotify Playlist ETL DAG",
     schedule_interval="@daily",  # or None for manual run
+    
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["spotify", "ETL"],
