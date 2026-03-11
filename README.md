@@ -1,728 +1,566 @@
-# Spotify Playlist Analytics Pipeline
+# 🎵 Spotify Playlist Analytics Pipeline
 
-A production-ready data engineering project demonstrating end-to-end ETL pipeline development, workflow orchestration, and analytical data modeling using real-world music streaming data.
+> **Containerized ETL pipeline** that ingests Spotify Web API data, transforms nested JSON into relational schemas, and exposes analytics through a Django web dashboard — with Apache Airflow orchestrating the batch pipeline and a REST API trigger connecting both systems.
+
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Airflow](https://img.shields.io/badge/Apache%20Airflow-2.2.3-017CEE?logo=apacheairflow&logoColor=white)](https://airflow.apache.org)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)](https://djangoproject.com)
+
+---
 
 ## TL;DR
 
-**What it does:** Extracts Spotify playlist data via API → Transforms & cleans → Loads to PostgreSQL → Serves analytics via Django dashboard
+**What it does:** Extracts Spotify playlist data via API → Transforms & cleans with Pandas → Loads to PostgreSQL → Serves analytics via Django dashboard
 
-**Why it matters:** Demonstrates idempotent UPSERT operations, Airflow orchestration, shared database architecture, and dual-pattern ETL (batch + on-demand)
+**Why it matters:** Demonstrates idempotent UPSERT operations, Airflow orchestration, shared database architecture, XCom-based task communication, and dual-pattern ETL (scheduled batch + on-demand web)
 
-**Key Tech:** Python • Apache Airflow • PostgreSQL • Django • Docker • Spotify Web API
+**Key Tech:** Python · Apache Airflow · PostgreSQL · Django · Docker · Spotify Web API
 
 **Demo:**
 ```bash
-cd airflow && docker compose up -d        # Start Airflow + PostgreSQL
-cd ../playlist_analyzer && python manage.py runserver  # Start web app
+cd airflow && docker compose up -d        # Start Airflow 2.2.3 + PostgreSQL 13
+cd ../playlist_analyzer && python manage.py runserver  # Start Django 5.2 web app
 # Visit: http://localhost:8000 (Django) | http://localhost:8080 (Airflow)
 ```
 
-## Quick Start
+---
 
-**Prerequisites:** Docker, Python 3.8+, Spotify API credentials ([Get here](https://developer.spotify.com/dashboard))
+## Architecture
 
-```bash
-# 1. Configure environment (.env.local in project root)
-SPOTIPY_CLIENT_ID=your_client_id
-SPOTIPY_CLIENT_SECRET=your_client_secret
-DB_USER=airflow
-DB_PASSWORD=airflow
-DB_HOST=localhost
-DB_PORT=5433
-
-# 2. Start PostgreSQL + Airflow (Docker)
-cd airflow
-docker compose up -d
-
-# 3. Set up Django database tables
-cd ../playlist_analyzer
-python manage.py migrate
-python manage.py createsuperuser
-
-# 4. Start Django web application
-python manage.py runserver
-```
-
-**Access Points:**
-- **Django App:** http://localhost:8000 (login with your superuser)
-- **Airflow UI:** http://localhost:8080 (username: `airflow`, password: `airflow`)
-- **PostgreSQL:** localhost:5433 (username: `airflow`, password: `airflow`)
-- **pgAdmin:** Connect using the PostgreSQL credentials above
-
-**Verify Installation:**
-```bash
-# Check containers are running
-docker ps | grep airflow
-
-# Check database connectivity
-docker exec airflow-postgres-1 psql -U airflow -d playlist_db -c "SELECT COUNT(*) FROM playlist_tracks;"
-```
-
-## Project Overview
-
-This project showcases core data engineering competencies through building a scalable ETL pipeline that extracts playlist metadata from the Spotify Web API, transforms it into structured analytical datasets, and loads it into a relational data warehouse. The pipeline is orchestrated with Apache Airflow and serves insights through a Django web application.
-
-**Both systems share a unified PostgreSQL database** running in Docker, demonstrating production-ready database management and multi-application integration.
-
-**Key Engineering Challenges Solved:**
-- API rate limiting and pagination handling for large-scale data extraction
-- Idempotent data loading with UPSERT operations to handle incremental updates
-- Nested JSON data normalization and schema design
-- Workflow orchestration and dependency management
-- Environment-agnostic configuration for local and containerized deployments
-
-## Technical Architecture
-
-This project consists of **two complementary systems** that share a unified PostgreSQL database:
-
-### System Architecture Overview
+This project consists of **two complementary systems** that share a unified PostgreSQL database and reuse the same Extract/Transform scripts.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    PRODUCTION ETL PIPELINE (Airflow)                │
-│                    Dockerized Production Workflow                   │
-├─────────────────────────────────────────────────────────────────────┤
-│  Spotify API → extract.py → transform.py → load.py                 │
+│               PRODUCTION ETL PIPELINE (Airflow + Docker)            │
+│                                                                      │
+│  Spotify API → extract.py → [raw_playlist_data.csv]                 │
+│                           → transform.py → [cleaned_playlist_data.csv]│
+│                                          → load.py                  │
 │                                               ↓                     │
-│                                    PostgreSQL Container             │
+│                                    PostgreSQL:playlist_db            │
 │                                  (playlist_tracks table)            │
-│                                               ↓                     │
-│                                  Analytics & Reporting              │
-└─────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      │ Shared Database (Port 5433)
-                                      │
-┌─────────────────────────────────────────────────────────────────────┐
-│                    WEB APPLICATION (Django)                         │
-│                   User-Facing Analytics Interface                   │
-├─────────────────────────────────────────────────────────────────────┤
-│  User → Submit URL → extract.py → transform.py                     │
-│                                               ↓                     │
-│                              load_tracks_to_db() (Django ORM)       │
-│                                               ↓                     │
-│                          PostgreSQL Container (Shared)              │
-│                   (dashboard_playlist & dashboard_track tables)     │
-│                                               ↓                     │
-│                          Dashboard Visualization                    │
+│                                  Raw SQL UPSERT via SQLAlchemy       │
+└─────────────────────────────────┬───────────────────────────────────┘
+                                  │ Shared PostgreSQL (port 5433)
+                                  │ Airflow REST API trigger
+┌─────────────────────────────────▼───────────────────────────────────┐
+│                    WEB APPLICATION (Django 5.2)                      │
+│                                                                      │
+│  User → Submit URL → extract.py → transform.py                      │
+│                                         ↓                           │
+│                           load_tracks_to_db() (Django ORM)          │
+│                                         ↓                           │
+│                         PostgreSQL:playlist_db (same container)     │
+│                  (dashboard_playlist & dashboard_track tables)      │
+│                                         ↓                           │
+│                    trigger_airflow_dag() ──→ Airflow REST API        │
+│                    POST /api/v1/dags/playlist_etl_dag/dagRuns        │
+│                                         ↓                           │
+│                           Dashboard with top artists, genres        │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Architecture Highlights
+**Key architectural decision:** Django does not block on Spotify API processing. It runs ETL inline for the user-facing dashboard, then immediately triggers an Airflow DAG via authenticated REST API call to load the same data into the centralized data warehouse asynchronously. The user never waits for the warehouse write.
 
-**Unified Database:**
-- Both systems share the **same PostgreSQL database** (Docker container on port 5433)
-- Airflow uses `playlist_tracks` table for ETL data warehouse
-- Django uses `dashboard_playlist`, `dashboard_track`, and `auth_user` tables
-- Single source of truth for all playlist data
+---
 
-**System Integration:**
-- Django web app triggers Airflow DAG via REST API when users submit playlists
-- Django processes data immediately for user dashboard (`dashboard_*` tables)
-- Airflow processes same playlist asynchronously for data warehouse (`playlist_tracks` table)
-- Both systems stay in sync automatically
+## Tech Stack
 
-**Shared Components:**
-- Both systems use the same **Extract** and **Transform** scripts for code reusability
-- Environment-based configuration (`.env.local` vs `.env.docker`) for deployment flexibility
-- Identical data schema with UPSERT logic to prevent duplicates
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Orchestration | Apache Airflow (LocalExecutor) | 2.2.3 |
+| Containerization | Docker + Docker Compose | — |
+| Backend / API | Django + Django REST views | 5.2 |
+| Data transformation | Python, Pandas | 2.2+ |
+| Storage | PostgreSQL (SQLAlchemy + psycopg2) | 13 |
+| External API | Spotify Web API (OAuth2 Client Credentials) | — |
+| ORM | SQLAlchemy (batch pipeline), Django ORM (web app) | 2.0+ |
 
-**Production Pipeline (Airflow):**
-- Batch processing with workflow orchestration
-- PostgreSQL data warehouse for scalable analytics
-- Scheduled/triggered execution via DAGs
-- Raw SQL UPSERT for high-performance bulk loads
+---
 
-**Web Application (Django):**
-- User-specific playlist analysis on-demand
-- Django ORM connected to the same PostgreSQL database
-- Per-user data isolation with authentication
-- Real-time playlist submission and visualization
+## Key Features
 
-### Core Components
+### 1. Idempotent Data Loading — Two Implementations
 
-#### 1. **Data Extraction Layer** ([scripts/extract.py](scripts/extract.py))
-- **API Integration**: Implements OAuth2 authentication with Spotify Web API using client credentials flow
-- **Pagination Handling**: Processes playlists with 100+ tracks using cursor-based pagination
-- **Rate Limiting**: Built-in delays (100ms) between artist genre lookups to respect API limits
-- **Error Recovery**: Try-except blocks for graceful handling of missing artist data
-- **Data Enrichment**: Fetches artist genres through additional API calls, joining data from multiple endpoints
-
-**Technical Highlights:**
-- Dynamic environment variable loading based on deployment mode (local vs Docker)
-- Extracts 12+ attributes per track including metadata, album info, and artist relationships
-- Handles many-to-many relationships (tracks ↔ artists, artists ↔ genres)
-
-#### 2. **Data Transformation Layer** ([scripts/transform.py](scripts/transform.py))
-- **Data Cleaning**: Type conversions, null handling, and data validation
-- **Feature Engineering**: Duration conversion (ms → minutes), date parsing, genre aggregation
-- **Normalization**: Flattens nested JSON structures (artist arrays, genre lists) into tabular format
-- **Aggregation**: Calculates top artists, genres, and track statistics for analytical queries
-- **Data Quality**: Deduplication and schema enforcement before loading
-
-**Technical Highlights:**
-- Pandas-based transformations for efficient in-memory processing
-- Exports to multiple formats (CSV, Parquet) for data archival and downstream consumption
-- Handles missing values and inconsistent API responses
-
-#### 3. **Data Loading Layer** ([scripts/load.py](scripts/load.py))
-- **Database Connection**: SQLAlchemy engine with PostgreSQL dialect for database-agnostic code
-- **UPSERT Pattern**: Implements `INSERT ... ON CONFLICT DO UPDATE` for idempotent loads
-- **Transactional Loading**: Uses temporary tables and atomic operations to prevent partial loads
-- **JSON Storage**: Stores array fields (genres, artist_ids) as TEXT with JSON formatting
-- **Type Casting**: Explicit CAST operations during insert for data type validation
-
-**Technical Highlights:**
+**Airflow pipeline** uses PostgreSQL `INSERT ... ON CONFLICT DO UPDATE` (raw SQL UPSERT) via a staging-table pattern:
 ```sql
--- Idempotent UPSERT logic preventing duplicates via unique index
 INSERT INTO playlist_tracks (playlist_id, track_id, track_name, ...)
 SELECT playlist_id, track_id, track_name, ...
-FROM temp_table
-ON CONFLICT ON CONSTRAINT idx_playlist_track DO UPDATE SET
+FROM temp_<random_hex>
+ON CONFLICT (playlist_id, track_id) DO UPDATE SET
     track_name = EXCLUDED.track_name,
     track_popularity = EXCLUDED.track_popularity,
-    track_genres = EXCLUDED.track_genres;
+    track_genres = EXCLUDED.track_genres,
+    ...;
+DROP TABLE temp_<random_hex>;
 ```
 
-#### 4. **Workflow Orchestration** (Apache Airflow)
-- **DAG Definition**: Defines task dependencies and execution order (extract → transform → load)
-- **Scheduling**: Supports cron-based scheduling and on-demand triggering
-- **Monitoring**: Web UI for pipeline observability, logs, and failure detection
-- **Containerization**: Runs in Docker with separate webserver, scheduler, and worker containers
+**Django web app** implements UPSERT logic using the ORM: filter for existing record, update in-place, or bulk-create new records with `ignore_conflicts=True`.
 
-#### 5. **Data Warehouse Schema** (PostgreSQL)
+Running either pipeline multiple times on the same playlist never creates duplicate rows — critical for scheduled ETL jobs and failure recovery.
 
-**Unified Database: `playlist_db`**
+### 2. DAG Trigger via Airflow REST API
 
-The project uses a single PostgreSQL database running in Docker (port 5433) shared by both Airflow and Django:
+When a user submits a playlist URL, Django immediately processes it for the dashboard, then fires an HTTP POST to the Airflow stable REST API (`/api/v1/dags/playlist_etl_dag/dagRuns`) with HTTP Basic Auth. The `playlist_id` is passed in `conf` and picked up by the DAG via `dag_run.conf`. This decouples real-time web requests from batch processing.
 
-**Airflow ETL Tables:**
+### 3. XCom-Based Task Communication
 
-`playlist_tracks` - Centralized data warehouse table
-```sql
-CREATE TABLE playlist_tracks (
-    track_id TEXT,
-    track_name TEXT,
-    track_duration_ms BIGINT,
-    track_popularity BIGINT,
-    track_genres TEXT,                    -- JSON stored as TEXT
-    album_id TEXT,
-    album_name TEXT,
-    album_release_date TEXT,
-    artist_ids TEXT,                      -- JSON stored as TEXT
-    artist_names TEXT,                    -- JSON stored as TEXT
-    release_year BIGINT,
-    track_duration_sec DOUBLE PRECISION,
-    playlist_id TEXT
-);
-
-CREATE UNIQUE INDEX idx_playlist_track ON playlist_tracks(playlist_id, track_id);
-```
-
-**Django Application Tables:**
-
-`dashboard_playlist` - User-specific playlist metadata
-```sql
-CREATE TABLE dashboard_playlist (
-    id BIGSERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES auth_user(id),
-    playlist_id VARCHAR(255) NOT NULL,
-    playlist_url VARCHAR(200) NOT NULL,
-    playlist_name VARCHAR(255) NOT NULL,
-    playlist_owner VARCHAR(255) NOT NULL,
-    playlist_image VARCHAR(200),
-    playlist_description TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    CONSTRAINT dashboard_playlist_user_id_playlist_id_uniq UNIQUE (user_id, playlist_id)
-);
-```
-
-`dashboard_track` - User-specific track data
-```sql
-CREATE TABLE dashboard_track (
-    id BIGSERIAL PRIMARY KEY,
-    playlist_id BIGINT NOT NULL REFERENCES dashboard_playlist(id),
-    track_id VARCHAR(255) NOT NULL,
-    track_name VARCHAR(255) NOT NULL,
-    track_duration_ms INTEGER NOT NULL,
-    track_popularity INTEGER,
-    track_genres JSONB NOT NULL,          -- True JSONB for efficient querying
-    album_id VARCHAR(255) NOT NULL,
-    album_name VARCHAR(255) NOT NULL,
-    album_release_date DATE,
-    album_label VARCHAR(255),
-    artist_ids JSONB NOT NULL,            -- True JSONB for efficient querying
-    artist_names JSONB NOT NULL,          -- True JSONB for efficient querying
-    CONSTRAINT dashboard_track_playlist_id_track_id_uniq UNIQUE (playlist_id, track_id)
-);
-```
-
-**Design Decisions:**
-- **Shared Database**: Both systems use the same PostgreSQL instance for data consistency
-- **Separate Tables**: Airflow uses `playlist_tracks` for ETL data warehouse, Django uses `dashboard_*` tables for user data
-- **Unique Constraints**: Composite unique indexes enable idempotent UPSERT operations
-- **Storage Formats**:
-  - Airflow: JSON stored as TEXT (optimized for bulk loading via SQLAlchemy)
-  - Django: True JSONB fields (optimized for querying and indexing via Django ORM)
-- **Port 5433**: Avoids conflicts with local PostgreSQL installations on default port 5432
-- **Django Migrations**: Automatically create Django tables using `python manage.py migrate`
-- **Operational Stability**: The pipeline has been executed repeatedly in a scheduled environment, with successful re-runs and backfills demonstrating production readiness
-
-#### 6. **Application Layer** ([playlist_analyzer/dashboard/views.py](playlist_analyzer/dashboard/views.py))
-- **Web Interface**: Django-based application for user-facing playlist analysis
-- **Data Loading**: `load_tracks_to_db()` function implements UPSERT logic using Django ORM
-- **Query Optimization**: Uses `select_related()` for efficient database queries
-- **User Authentication**: Per-user playlist isolation with Django's auth system
-- **Real-time Processing**: On-demand ETL execution when users submit playlist URLs
-
-#### 7. **Django ↔ Airflow Integration** (System Integration via REST API)
-
-**Implementation Overview:**
-
-When a user submits a playlist via Django, the application triggers an Airflow DAG execution via REST API, enabling both systems to process the same data independently.
-
-**Django Side - Triggering Airflow** ([views.py:68-108](playlist_analyzer/dashboard/views.py#L68-L108))
+The DAG uses Airflow XCom to pass `playlist_id` from the extract task downstream to the load task, avoiding filesystem coupling between tasks for metadata:
 ```python
-def trigger_airflow_dag(playlist_id):
-    """
-    Trigger Airflow DAG to load playlist data into the data warehouse
-    This runs asynchronously - Django doesn't wait for it
-    """
-    airflow_url = os.getenv("AIRFLOW_API_URL", "http://localhost:8080")
-    dag_run_url = f"{airflow_url}/api/v1/dags/playlist_etl_dag/dagRuns"
+# Extract task pushes
+context["task_instance"].xcom_push(key="playlist_id", value=playlist_id)
 
-    response = requests.post(
-        dag_run_url,
-        json={"conf": {"playlist_id": playlist_id}},
-        auth=(os.getenv("AIRFLOW_USER"), os.getenv("AIRFLOW_PASSWORD")),
-        timeout=5
-    )
-
-    if response.status_code in [200, 201]:
-        logger.info(f"Successfully triggered Airflow DAG for playlist {playlist_id}")
+# Load task pulls
+playlist_id = context["task_instance"].xcom_pull(task_ids="extract_playlist_data", key="playlist_id")
 ```
 
-**Airflow Side - Receiving Playlist ID** ([playlist_etl_dag.py:53](airflow/dags/playlist_etl_dag.py#L53))
-```python
-def extract_task(**context):
-    # Retrieve playlist_id from DAG run configuration
-    playlist_id = context["dag_run"].conf.get("playlist_id", "")
+### 4. CSV File Staging Between DAG Tasks
 
-    if not playlist_id:
-        playlist_id = "7vhaamErffNetyvUgueBs3"  # Default fallback
+The pipeline uses shared Docker volume paths as an intermediate handoff layer between tasks:
+- Extract writes to `/opt/airflow/data/raw_playlist_data.csv`
+- Transform reads from that path, writes to `/opt/airflow/data/cleaned_playlist_data.csv`
+- Load reads the cleaned CSV and executes the UPSERT
 
-    sp = spotify_api_setup()
-    df, _ = extract_playlist_tracks(sp, playlist_id)
-    # ... continue ETL process
-```
+This pattern keeps each task stateless and independently restartable.
 
-**Integration Flow:**
-1. User submits playlist URL via Django web interface
-2. Django processes data immediately → saves to `dashboard_*` tables
-3. Django calls `trigger_airflow_dag(playlist_id)` → HTTP POST to Airflow API
-4. Airflow DAG starts execution with `playlist_id` in `dag_run.conf`
-5. Airflow runs full ETL pipeline → saves to `playlist_tracks` table
-6. Both systems now have the same data in their respective tables
+### 5. Nested JSON Normalization
 
-**Result:** After submission, the DAG appears in the Airflow UI as a triggered run with the playlist ID visible in the DAG run configuration, demonstrating successful cross-system integration.
+Spotify returns deeply nested JSON (tracks → artists → albums, artists → genres via a separate API endpoint). The extract layer flattens this by making per-artist API calls to enrich genre data, storing `artist_ids`, `artist_names`, and `track_genres` as Python lists. The transform layer handles mixed-type inputs (stringified lists from CSV vs. real lists from memory) via `ast.literal_eval`.
 
-**Technical Highlights:**
-```python
-# UPSERT logic using Django ORM (similar to PostgreSQL approach)
-existing_track = Track.objects.filter(
-    playlist=playlist_obj,
-    track_id=row['track_id']
-).first()
+### 6. Dual Storage Format
 
-if existing_track:
-    # Update existing track
-    existing_track.track_name = row['track_name']
-    existing_track.save()
-else:
-    # Create new track using bulk operations
-    Track.objects.bulk_create(tracks_to_create, ignore_conflicts=True)
-```
+The transform script exports cleaned data in two formats:
+- **CSV** (`cleaned_playlist_data.csv`) — for PostgreSQL UPSERT via SQLAlchemy
+- **Parquet** (`cleaned_playlist_data.parquet`) — for downstream analytics or archival
 
-**Database Models:**
-- **Playlist Model**: Stores playlist metadata with `unique_together` constraint on `(user, playlist_id)`
-- **Track Model**: Stores track data with JSONField for artists/genres, `unique_together` on `(playlist, track_id)`
-- **Django ORM**: Database-agnostic queries (supports SQLite for development, PostgreSQL for production)
+### 7. Dual JSONB vs TEXT Storage Strategy
 
-## Technologies & Tools
+The two systems store array fields differently — an intentional trade-off:
+- **Airflow `playlist_tracks`**: Arrays stored as `TEXT` (JSON-serialized). Optimized for high-throughput bulk UPSERT via SQLAlchemy `.to_sql()` + raw SQL `CAST(... AS jsonb)`.
+- **Django `dashboard_track`**: Arrays stored as PostgreSQL `JSONB` via Django's `JSONField`. Optimized for ORM-level querying and iteration in Python.
 
-**Data Engineering Stack:**
-- **Python 3.x**: Core scripting language
-- **Apache Airflow**: Workflow orchestration and scheduling
-- **PostgreSQL**: Relational data warehouse
-- **Pandas**: Data transformation and analysis
-- **SQLAlchemy**: Database abstraction and ORM
-- **Spotipy**: Spotify Web API client library
+### 8. Environment-Aware Configuration
 
-**DevOps & Infrastructure:**
-- **Docker & Docker Compose**: Containerization and local development
-- **Git**: Version control
-- **python-dotenv**: Environment configuration management
+Both the ETL scripts and Django settings detect `ENV_MODE=local` vs `ENV_MODE=docker` and load from `.env.local` or `.env.docker` respectively. This enables the same codebase to run both locally and inside Docker containers without code changes.
 
-**Web Framework:**
-- **Django**: Application server and admin interface
+### 9. API Rate Limiting Handling
 
-## Airflow Orchestration
+The extract layer inserts a `time.sleep(0.1)` between each per-artist genre lookup call to respect Spotify's rate limits, and wraps each call in a try-except to skip gracefully on failures without aborting the entire extraction.
 
-- The playlist ETL pipeline is orchestrated using Apache Airflow and scheduled to run daily.
-Each DAG execution performs a full Extract → Transform → Load workflow with built-in retry
-and failure handling to ensure reliability and idempotent data loading.
-![Airflow DAG - Spotify Playlist ETL](images/airflow_playlist_dag.png)
+### 10. Comprehensive Testing Suite
 
-## Key Data Engineering Concepts Demonstrated
+Three test modules with 30+ test cases covering extraction mocking, transformation correctness, data quality schemas, Django model constraints, view authentication, and UPSERT idempotency. A QA report generator and SQL validation query set are also included.
 
-### 1. **ETL Pipeline Design**
-- Separation of concerns: Extract, Transform, Load as independent modules
-- Modular, reusable code structure
-- Environment-based configuration for portability
-
-### 2. **Data Modeling**
-- Denormalized analytical table design optimized for batch analytics
-- Unique constraints for data integrity
-- Idempotent operations for reliable re-runs
-
-### 3. **Workflow Orchestration**
-- DAG-based task scheduling
-- Dependency management between pipeline stages
-- Retry logic and failure handling
-
-### 4. **Scalability Patterns**
-- Pagination for large dataset processing
-- Batch processing with temporary staging tables
-- Stateless pipeline design for horizontal scaling
-
-### 5. **Data Quality**
-- Schema validation through explicit type casting
-- Null handling and default values
-- Error logging and monitoring
-
-## Local Development Setup
-
-### Prerequisites
-- Python 3.8+
-- PostgreSQL 12+
-- Spotify Developer Account ([Get credentials here](https://developer.spotify.com/dashboard))
-- Virtual environment tool (venv, conda)
-
-### Installation Steps
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/spotify-playlist-analyzer.git
-   cd spotify-playlist-analyzer
-   ```
-
-2. **Set up Python virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. **Configure environment variables**
-
-   Create `.env.local` in the project root:
-   ```bash
-   # Spotify API Credentials
-   SPOTIPY_CLIENT_ID=your_client_id_here
-   SPOTIPY_CLIENT_SECRET=your_client_secret_here
-
-   # PostgreSQL Connection (Docker Container)
-   DB_NAME=playlist_db
-   DB_USER=airflow
-   DB_PASSWORD=airflow
-   DB_HOST=localhost
-   DB_PORT=5433
-
-   # Airflow API Configuration (for Django → Airflow integration)
-   AIRFLOW_API_URL=http://localhost:8080
-   AIRFLOW_USER=airflow
-   AIRFLOW_PASSWORD=airflow
-
-   # Environment Mode
-   ENV_MODE=local
-   ```
-
-   **Note:** The database runs in a Docker container on port 5433 to avoid conflicts with local PostgreSQL installations on port 5432.
-
-4. **Start PostgreSQL with Docker**
-   ```bash
-   cd airflow
-   docker compose up -d postgres
-   ```
-
-   The PostgreSQL database will be automatically created and accessible on port 5433.
-   Both Airflow and Django will use this shared database instance.
-
-5. **Set up Django database tables**
-   ```bash
-   cd playlist_analyzer
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
-
-6. **Run the ETL pipeline manually (optional)**
-   ```bash
-   # Extract data from Spotify API
-   python scripts/extract.py
-
-   # Transform data
-   python scripts/transform.py
-
-   # Load into PostgreSQL
-   python scripts/load.py
-   ```
-
-7. **Launch Django application**
-   ```bash
-   cd playlist_analyzer
-   python manage.py runserver
-   ```
-
-   Access at: `http://localhost:8000`
-
-   Admin panel: `http://localhost:8000/admin`
-
-### Docker Deployment (Airflow)
-
-For production-like orchestration with Airflow:
-
-```bash
-cd airflow
-docker compose up -d
-```
-
-Access Airflow UI at `http://localhost:8080` (credentials: `airflow/airflow`)
-
-**Database Access:**
-- PostgreSQL runs on port **5433** (to avoid conflicts with local PostgreSQL on 5432)
-- Connection string: `postgresql://airflow:airflow@localhost:5433/playlist_db`
-- Use pgAdmin or any PostgreSQL client with these credentials
-
-## Testing
-
-This project includes comprehensive test coverage for both ETL scripts and the Django application. See [TESTING.md](TESTING.md) for detailed testing documentation.
-
-### **Quick Start**
-
-**Run ETL Unit Tests:**
-```bash
-pytest tests/
-```
-
-**Run Django Tests:**
-```bash
-cd playlist_analyzer
-python manage.py test dashboard
-```
-
-**With Coverage Reports:**
-```bash
-# ETL scripts
-pytest tests/ --cov=scripts --cov-report=html
-
-# Django application
-cd playlist_analyzer
-coverage run --source='.' manage.py test dashboard
-coverage report
-```
-
-### **Test Coverage**
-
-| Component | Tests |
-|-----------|-------|
-| **Extract Layer** | API authentication, pagination, error handling |
-| **Transform Layer** | Data cleaning, type conversions, null handling |
-| **Load Layer** | UPSERT logic, bulk operations |
-| **Django Models** | Playlist/Track creation, constraints |
-| **Django Views** | Authentication, dashboard rendering, analysis workflow |
-
-**Test Files:**
-- [tests/test_extract.py](tests/test_extract.py) - Spotify API extraction tests
-- [tests/test_transform.py](tests/test_transform.py) - Data transformation tests
-- [playlist_analyzer/dashboard/tests.py](playlist_analyzer/dashboard/tests.py) - Django tests
-
-## Pipeline Execution
-
-### Option 1: Production ETL Pipeline (Airflow + PostgreSQL)
-
-**Manual Script Execution:**
-```bash
-python scripts/extract.py   # Creates data/raw_playlist_data.csv
-python scripts/transform.py # Creates data/cleaned_playlist_data.csv
-python scripts/load.py      # Loads to PostgreSQL with UPSERT
-```
-
-**Airflow Orchestrated Execution:**
-1. Open Airflow UI at `http://localhost:8080`
-2. Enable the `playlist_etl_dag`
-3. Trigger manually or wait for scheduled run
-4. Monitor task execution and logs
-
-### Option 2: Web Application (Django)
-
-**User Workflow:**
-1. Navigate to `http://localhost:8000`
-2. Create an account or log in
-3. Submit a Spotify playlist URL
-4. Wait for analysis (15-20 seconds for API extraction)
-5. View dashboard with top artists, genres, and track details
-
-**Behind the Scenes:**
-- Django calls `extract.py` and `transform.py` on-demand
-- Data loaded to Django database via `load_tracks_to_db()` using ORM
-- **Django triggers Airflow DAG via REST API** to load data into the data warehouse
-- Airflow processes the same playlist asynchronously in the background
-- Dashboard queries optimized with `select_related()` for fast rendering
-- Re-analyzing the same playlist updates existing data (no duplicates)
-
-## Data Flow Example
-
-**Input:** Spotify Playlist URL
-```
-https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M
-```
-
-**Extract Output:** Raw JSON → DataFrame (100+ tracks)
-```
-track_id, track_name, artist_ids, artist_names, genres, duration_ms, ...
-```
-
-**Transform Output:** Cleaned and enriched data
-```
-track_id, track_name, track_duration_min, top_genre, release_year, ...
-```
-
-**Load Output:** PostgreSQL table with UPSERT on unique constraint
-```sql
--- Query example with actual Spotify playlist ID
-SELECT track_name, artist_names, track_genres
-FROM playlist_tracks
-WHERE playlist_id = '7vhaamErffNetyvUgueBs3'
-LIMIT 10;
-```
+---
 
 ## Project Structure
 
 ```
 spotify-playlist-analyzer/
-├── scripts/                           # Shared ETL Scripts (used by both systems)
-│   ├── extract.py                    # Spotify API extraction with rate limiting
-│   ├── transform.py                  # Pandas-based data transformation
-│   └── load.py                       # PostgreSQL loading with raw SQL UPSERT
 │
-├── airflow/                          # Production ETL Pipeline
+├── scripts/                              # Shared ETL scripts (used by both systems)
+│   ├── extract.py                        # Spotify API ingestion with pagination & genre enrichment
+│   ├── transform.py                      # Pandas normalization + CSV/Parquet export
+│   └── load.py                           # PostgreSQL UPSERT via SQLAlchemy + raw SQL
+│
+├── airflow/                              # Airflow submodule + project DAGs
 │   ├── dags/
-│   │   └── playlist_etl_dag.py      # Airflow DAG definition
-│   ├── docker-compose.yml           # PostgreSQL + Airflow containers
-│   └── data/                        # Shared volume for pipeline data
+│   │   ├── playlist_etl_dag.py           # Main DAG: extract_playlist_data → transform_playlist_data → load_playlist_data
+│   │   └── hello.py                      # Sanity-check DAG (hello_airflow)
+│   └── docker-compose.yml                # PostgreSQL 13 + Airflow 2.2.3 (webserver, scheduler, worker)
 │
-├── playlist_analyzer/               # Django Web Application
+├── playlist_analyzer/                    # Django 5.2 web application
 │   ├── dashboard/
-│   │   ├── models.py               # Playlist & Track models (Django ORM)
-│   │   ├── views.py                # ETL orchestration + dashboard logic
-│   │   ├── urls.py                 # URL routing
-│   │   └── templates/              # HTML templates for UI
-│   ├── users/                      # User authentication app
+│   │   ├── models.py                     # Playlist, Track models (JSONField, unique_together)
+│   │   ├── views.py                      # analyze_playlist, dashboard, user_playlists views
+│   │   ├── urls.py                       # URL routing for dashboard app
+│   │   ├── tests.py                      # Django model, view, and UPSERT tests
+│   │   └── templates/
+│   │       └── dashboard/
+│   │           ├── index.html
+│   │           ├── dashboard.html
+│   │           └── user_playlists.html
+│   ├── users/
+│   │   ├── views.py                      # register view (UserCreationForm)
+│   │   └── urls.py                       # register, login, logout routes
 │   ├── playlist_analyzer/
-│   │   └── settings.py             # Django config (PostgreSQL connection)
+│   │   ├── settings.py                   # PostgreSQL config, app registration
+│   │   └── urls.py                       # Root URL config
 │   └── manage.py
 │
-├── data/                           # Data artifacts (CSV, Parquet)
-├── .env.local                      # Local development config (Django)
-├── .env.docker                     # Docker environment config (Airflow)
-├── requirements.txt                # Python dependencies
-└── README.md
+├── tests/                                # ETL unit tests & QA tooling
+│   ├── test_extract.py                   # Spotify API mock tests (pagination, missing tracks)
+│   ├── test_transform.py                 # Transformation correctness & edge cases
+│   ├── test_data_quality.py              # JSON schema validation & business rule checks
+│   ├── generate_qa_report.py             # QA report generator (JSON output)
+│   ├── postman/
+│   │   └── Spotify_API_Tests.postman_collection.json
+│   └── sql/
+│       └── data_quality_checks.sql       # 10 SQL validation queries against playlist_tracks
+│
+├── data/                                 # Data artifacts (gitignored in production)
+│   ├── raw_playlist_data.csv
+│   ├── cleaned_playlist_data.csv
+│   └── cleaned_playlist_data.parquet
+│
+├── images/
+│   └── airflow_playlist_dag.png          # Screenshot of DAG in Airflow UI
+│
+├── .env.local                            # Local dev config (Django + scripts)
+├── .env.docker                           # Docker env config (Airflow container)
+├── requirements.txt                      # Python dependencies
+├── pytest.ini                            # Pytest config with Django settings module
+└── TESTING.md                            # Detailed testing documentation
 ```
 
-**Key Files:**
-- `scripts/extract.py` & `transform.py`: Reusable ETL logic shared by both systems
-- `scripts/load.py`: PostgreSQL-specific bulk loader (Airflow pipeline)
-- `playlist_analyzer/dashboard/views.py`: Django ORM loader + web interface
-- `airflow/docker-compose.yml`: Defines PostgreSQL + Airflow infrastructure
+---
 
-## System Comparison
+## Data Flow
 
-| Feature | Production Pipeline (Airflow) | Web Application (Django) |
-|---------|-------------------------------|--------------------------|
-| **Purpose** | Batch analytics & data warehousing | User-facing playlist analysis |
-| **Database** | PostgreSQL (Docker, port 5433) | PostgreSQL (same container, port 5433) |
-| **Tables** | `playlist_tracks` | `dashboard_playlist`, `dashboard_track`, `auth_user` |
-| **Execution** | Scheduled/triggered DAGs | On-demand via HTTP requests |
-| **Load Strategy** | Raw SQL UPSERT (high-performance) | Django ORM UPSERT (database-agnostic) |
-| **Data Scope** | Centralized analytics datasets | Per-user isolated playlists |
-| **Orchestration** | Apache Airflow | Django request/response cycle |
-| **Optimization** | Bulk operations, temp tables | Query optimization, `select_related()` |
-| **Use Case** | Production data pipelines | Interactive user dashboards |
+### Airflow Pipeline (Batch)
 
-**Why Two Systems with Shared Database?**
-- **Code Reusability**: Shared extract/transform logic demonstrates modular design
-- **Different Patterns**: Shows both batch processing (Airflow) and request-driven ETL (Django)
-- **Unified Data Store**: Single PostgreSQL database ensures data consistency
-- **System Integration**: Django triggers Airflow DAG via REST API for seamless data warehouse updates
-- **Scalability Options**: Airflow for bulk analytics, Django for real-time user needs
-- **Production Architecture**: Demonstrates proper database management, API integration, and multi-application orchestration
-- **Portfolio Breadth**: Shows expertise in workflow orchestration, web development, database design, and system integration
+```
+Spotify Web API (OAuth2)
+        ↓
+extract_playlist_data task
+  - sp.playlist() → playlist name, owner
+  - sp.playlist_items(limit=100) → cursor-based pagination
+  - sp.artist() per artist → genre enrichment (100ms sleep between calls)
+  - Output: 12 fields per track → raw_playlist_data.csv
+        ↓  [XCom: playlist_id]
+transform_playlist_data task
+  - album_release_date → pd.to_datetime, extract release_year
+  - track_duration_ms / 1000 → track_duration_sec
+  - track_popularity.fillna(0).astype(int)
+  - album_name.fillna("Unknown")
+  - ast.literal_eval on stringified list columns
+  - Output: cleaned_playlist_data.csv + cleaned_playlist_data.parquet
+        ↓  [XCom: playlist_id]
+load_playlist_data task
+  - df.to_sql() → temp_<random_hex> (staging table)
+  - INSERT INTO playlist_tracks ... SELECT FROM temp ... ON CONFLICT DO UPDATE
+  - DROP TABLE temp_<random_hex>
+  - Target: PostgreSQL playlist_db.playlist_tracks
+```
 
-## Future Enhancements
+### Django Web Flow (On-Demand)
 
-**Data Engineering Improvements:**
-- Implement incremental loading using Spotify's `snapshot_id` for change data capture
-- Add data quality tests with Great Expectations or similar framework
-- Implement streaming ingestion with Apache Kafka for real-time updates
-- Add data lineage tracking and metadata management
-- Migrate to cloud data warehouse (Snowflake/BigQuery/Redshift)
-- Implement dbt for transformation layer with version control
+```
+User POSTs Spotify playlist URL
+        ↓
+analyze_playlist view
+  - Extract playlist_id from URL (split on "/" and "?")
+  - spotify_api_setup() → SpotifyClientCredentials
+  - extract_playlist_tracks() → raw DataFrame + metadata dict
+  - transform_playlist_df() → cleaned DataFrame
+  - Playlist.objects.get_or_create(user, playlist_id)
+  - load_tracks_to_db(clean_df, playlist_obj)
+    ├── Existing track → field-by-field update + .save()
+    └── New track → append to list → bulk_create(ignore_conflicts=True)
+  - Save cleaned CSV to webData/<playlist_id>_cleaned.csv
+  - trigger_airflow_dag(playlist_id) → async HTTP POST (timeout=5s)
+  - redirect to dashboard/<playlist_id>/
+        ↓
+dashboard view
+  - Track.objects.filter(playlist=playlist_obj).select_related('playlist')
+  - Counter() on artist_names and track_genres lists
+  - top_artists = most_common(10), top_genres = most_common(10)
+  - render dashboard.html with track_count, track_table, playlist metadata
+```
 
-**Infrastructure Improvements:**
-- CI/CD pipeline with automated testing
-- Infrastructure as Code with Terraform
-- Monitoring and alerting with Prometheus/Grafana
-- Data catalog with Apache Atlas or Amundsen
+---
 
-**Django Web Application Improvements:**
-- Background task processing with Celery for async Spotify API calls
-- Redis caching layer to reduce redundant API requests
-- Pagination for playlists with 100+ tracks
-- Database indexes on frequently queried fields
-- Production deployment with Gunicorn + Nginx
-- Cross-system data queries (join Airflow ETL data with user playlists)
+## Database Schema
+
+Both systems share the same PostgreSQL container (`playlist_db` on Docker port `5433`).
+
+### Airflow ETL Table: `playlist_tracks`
+
+Created automatically by `load.py` via `df.to_sql()` on first run:
+
+```sql
+CREATE TABLE playlist_tracks (
+    playlist_id          TEXT,
+    track_id             TEXT,
+    track_name           TEXT,
+    track_duration_ms    BIGINT,
+    track_popularity     BIGINT,
+    track_genres         JSONB,     -- Stored as TEXT in staging, CAST to JSONB on INSERT
+    album_id             TEXT,
+    album_name           TEXT,
+    album_release_date   DATE,      -- CAST from TEXT during UPSERT
+    album_label          TEXT,
+    artist_ids           JSONB,     -- Stored as TEXT in staging, CAST to JSONB on INSERT
+    artist_names         JSONB,     -- Stored as TEXT in staging, CAST to JSONB on INSERT
+    release_year         BIGINT,
+    track_duration_sec   DOUBLE PRECISION,
+    CONSTRAINT playlist_tracks_pkey UNIQUE (playlist_id, track_id)
+);
+```
+
+**UPSERT conflict key:** `(playlist_id, track_id)` — a track can appear in multiple playlists.
+
+### Django ORM Tables: `dashboard_playlist`, `dashboard_track`
+
+Created via `python manage.py migrate` from Django model definitions:
+
+```sql
+-- dashboard_playlist
+CREATE TABLE dashboard_playlist (
+    id                   BIGSERIAL PRIMARY KEY,
+    user_id              INTEGER NOT NULL REFERENCES auth_user(id) ON DELETE CASCADE,
+    playlist_id          VARCHAR(255) NOT NULL,
+    playlist_url         VARCHAR(200) NOT NULL,
+    playlist_name        VARCHAR(255) NOT NULL,
+    playlist_owner       VARCHAR(255) NOT NULL,
+    playlist_image       VARCHAR(200),
+    playlist_description TEXT NOT NULL DEFAULT '',
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (user_id, playlist_id)
+);
+
+-- dashboard_track
+CREATE TABLE dashboard_track (
+    id                   BIGSERIAL PRIMARY KEY,
+    playlist_id          BIGINT NOT NULL REFERENCES dashboard_playlist(id) ON DELETE CASCADE,
+    track_id             VARCHAR(255) NOT NULL,
+    track_name           VARCHAR(255) NOT NULL,
+    track_duration_ms    INTEGER NOT NULL,
+    track_popularity     INTEGER,
+    track_genres         JSONB NOT NULL DEFAULT '[]',   -- Native JSONB via Django JSONField
+    album_id             VARCHAR(255) NOT NULL,
+    album_name           VARCHAR(255) NOT NULL,
+    album_release_date   DATE,
+    album_label          VARCHAR(255),
+    artist_ids           JSONB NOT NULL DEFAULT '[]',
+    artist_names         JSONB NOT NULL DEFAULT '[]',
+    UNIQUE (playlist_id, track_id)
+);
+```
+
+**Key difference from `playlist_tracks`:** The Django tables use true `JSONB` columns (not text-serialized), which enables ORM-level Python list iteration without deserialization.
+
+---
+
+## Airflow DAG: `playlist_etl_dag`
+
+| Property | Value |
+|----------|-------|
+| DAG ID | `playlist_etl_dag` |
+| Schedule | `@daily` |
+| Start date | 2024-01-01 |
+| Catchup | `False` |
+| Tags | `["spotify", "ETL"]` |
+| Executor | `LocalExecutor` |
+| Retries | 1 (retry delay: 1 minute) |
+| Default playlist | `1ssFFcU1hlZnKgNnDshd0F` |
+
+**Task graph:**
+```
+extract_playlist_data >> transform_playlist_data >> load_playlist_data
+```
+
+All tasks are `PythonOperator` with `**context` passed through, enabling XCom access. The linear dependency chain (`>>`) was a deliberate choice to prevent race conditions on shared intermediate CSV files — if tasks ran in parallel, a concurrent write to `raw_playlist_data.csv` could corrupt the transform step.
+
+**Triggering via Airflow REST API:**
+```bash
+curl -X POST http://localhost:8080/api/v1/dags/playlist_etl_dag/dagRuns \
+  -H "Content-Type: application/json" \
+  -u airflow:airflow \
+  -d '{"conf": {"playlist_id": "1ssFFcU1hlZnKgNnDshd0F"}}'
+```
+
+![Airflow DAG - Spotify Playlist ETL](images/airflow_playlist_dag.png)
+
+---
+
+## Django URL Routes
+
+| Method | URL | View | Auth Required |
+|--------|-----|------|---------------|
+| GET | `/` | `index` | No |
+| POST | `/analyze/` | `analyze_playlist` | Yes (403 if not logged in) |
+| GET | `/dashboard/<playlist_id>/` | `dashboard` | Yes (user scoped) |
+| GET | `/my-playlists/` | `user_playlists` | Yes (`@login_required`) |
+| GET/POST | `/users/register/` | `register` | No |
+| GET/POST | `/users/login/` | `LoginView` (built-in) | No |
+| POST | `/users/logout/` | `LogoutView` (built-in) | — |
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Docker Desktop
+- Python 3.8+
+- Spotify Developer account ([Get credentials](https://developer.spotify.com/dashboard))
+
+### 1. Configure environment
+
+Create `.env.local` in the project root:
+```bash
+# Spotify API
+SPOTIPY_CLIENT_ID=your_client_id_here
+SPOTIPY_CLIENT_SECRET=your_client_secret_here
+
+# PostgreSQL (Docker container)
+DB_NAME=playlist_db
+DB_USER=airflow
+DB_PASSWORD=airflow
+DB_HOST=localhost
+DB_PORT=5433
+
+# Airflow integration (used by Django)
+AIRFLOW_API_URL=http://localhost:8080
+AIRFLOW_USER=airflow
+AIRFLOW_PASSWORD=airflow
+
+ENV_MODE=local
+```
+
+### 2. Start PostgreSQL + Airflow
+
+```bash
+cd airflow
+docker compose up -d
+```
+
+This starts four containers on the `airflow-net` bridge network:
+- `postgres` — PostgreSQL 13 on port `5433` (mapped from container's 5432)
+- `airflow-webserver` — Airflow UI on port `8080`
+- `airflow-scheduler` — DAG scheduler
+- `airflow-worker` — Celery worker (idle in LocalExecutor mode)
+
+The `scripts/` directory and `data/` directory are bind-mounted into the Airflow containers at `/opt/airflow/scripts` and `/opt/airflow/data`.
+
+### 3. Set up Django
+
+```bash
+cd playlist_analyzer
+pip install -r ../requirements.txt
+python manage.py migrate          # Creates dashboard_playlist, dashboard_track, auth tables
+python manage.py createsuperuser  # Create login credentials
+python manage.py runserver        # Start on http://localhost:8000
+```
+
+### 4. Access points
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Django app | http://localhost:8000 | Your superuser |
+| Airflow UI | http://localhost:8080 | `airflow` / `airflow` |
+| PostgreSQL | `localhost:5433` | `airflow` / `airflow` |
+
+### 5. Verify the pipeline
+
+```bash
+# Check PostgreSQL data after analyzing a playlist
+docker exec airflow-postgres-1 psql -U airflow -d playlist_db \
+  -c "SELECT COUNT(*) FROM playlist_tracks;"
+
+# Trigger DAG manually
+curl -X POST http://localhost:8080/api/v1/dags/playlist_etl_dag/dagRuns \
+  -u airflow:airflow \
+  -H "Content-Type: application/json" \
+  -d '{"conf": {"playlist_id": "1ssFFcU1hlZnKgNnDshd0F"}}'
+```
+
+### 6. Run ETL scripts directly (without Airflow)
+
+```bash
+python scripts/extract.py    # Writes data/raw_playlist_data.csv
+python scripts/transform.py  # Writes data/cleaned_playlist_data.csv + .parquet
+python scripts/load.py       # UPSERTs to PostgreSQL playlist_tracks table
+```
+
+---
+
+## Testing
+
+See [TESTING.md](TESTING.md) for the full testing guide.
+
+### Test suite overview
+
+| File | Scope | Key Tests |
+|------|-------|-----------|
+| `tests/test_extract.py` | Unit | Spotify API auth (local vs Docker env), pagination across 2 pages, `None` track skipping, genre enrichment |
+| `tests/test_transform.py` | Unit | ms→sec conversion, date parsing, null handling (`popularity→0`, `album→"Unknown"`), `ast.literal_eval` for mixed list types, empty DataFrame edge case |
+| `tests/test_data_quality.py` | Schema/Rules | JSON schema validation for Spotify track response, popularity range 0–100, date format, empty artists array, dtype assertions, business rule constraints |
+| `playlist_analyzer/dashboard/tests.py` | Django | `Playlist`/`Track` model creation, `unique_together` constraint enforcement, `load_tracks_to_db` UPSERT behavior (update vs. create), view authentication, dashboard context data, end-to-end `analyze_playlist` with mocked ETL |
+| `tests/sql/data_quality_checks.sql` | SQL | 10 validation queries: duplicate detection, NULL checks, popularity range, duration > 0, date range, JSONB type validation, UPSERT idempotency, cross-playlist consistency, statistical outliers |
+| `tests/postman/Spotify_API_Tests.postman_collection.json` | API | Postman collection for manual API verification |
+
+### Run tests
+
+```bash
+# ETL unit tests (from project root)
+pytest tests/
+
+# With coverage
+pytest tests/ --cov=scripts --cov-report=html
+
+# Django tests (from playlist_analyzer/)
+cd playlist_analyzer
+python manage.py test dashboard
+
+# Specific test class
+python manage.py test dashboard.tests.LoadTracksToDBTest
+
+# Full QA report
+python tests/generate_qa_report.py
+```
+
+### Test coverage targets
+
+| Component | Target |
+|-----------|--------|
+| Extract Scripts | 90% |
+| Transform Scripts | 95% |
+| Django Models | 95% |
+| Django Views | 85% |
+
+---
+
+## Design Decisions
+
+**Why Airflow over a simple cron job?**
+Cron has no visibility into task status, no retry logic, and no dependency management. Airflow provides DAG-level observability through its web UI, task-level retries with configurable backoff, XCom for inter-task communication, and makes the pipeline self-documenting as code. The DAG definition file is the single source of truth for pipeline structure.
+
+**Why Docker Compose?**
+Airflow requires multiple cooperating services (webserver, scheduler, worker, metadata database). Compose keeps the entire environment reproducible in a single `docker-compose up`, with bind-mounted volumes giving the Airflow containers access to the same `scripts/` and `data/` directories used during local development. Port `5433` is used for PostgreSQL (instead of the default `5432`) to avoid conflicts with any local PostgreSQL installation.
+
+**Why PostgreSQL over SQLite for Django?**
+Concurrent writes from Airflow workers and the Django web server require proper transaction isolation. SQLite's file-level locking makes it unsuitable for multi-process ETL workloads. PostgreSQL also provides native `JSONB` columns, enabling efficient storage and querying of the array fields (genres, artist IDs, artist names) that the Spotify API returns.
+
+**Why two separate load implementations (raw SQL vs. Django ORM)?**
+The Airflow pipeline prioritizes throughput: bulk-loading via `df.to_sql()` into a staging table and executing a single atomic UPSERT SQL statement is significantly faster than row-by-row ORM operations for batch workloads. Django's ORM implementation prioritizes code clarity, database-agnosticism (works on SQLite in dev, PostgreSQL in production), and integration with Django's model layer (signals, admin, migrations).
+
+**Why store arrays as TEXT in `playlist_tracks` but JSONB in `dashboard_track`?**
+`df.to_sql()` via SQLAlchemy cannot natively write Python lists as PostgreSQL JSONB — it needs an intermediate TEXT representation. The UPSERT SQL then uses `CAST(... AS jsonb)` during the insert. Django's `JSONField` handles the Python↔JSONB serialization automatically in the ORM layer, making it the natural choice for the application tables.
+
+**Why does Django trigger Airflow instead of just running ETL inline?**
+Django already runs the ETL inline for immediate user feedback (dashboard renders in ~15–20 seconds). Triggering Airflow in parallel — with a 5-second timeout so a down Airflow instance never blocks the user — populates the centralized analytics warehouse without adding latency to the web request. This pattern mirrors production architectures where web applications emit events and batch systems consume them asynchronously.
+
+**Why enforce `extract >> transform >> load` as a strict linear chain?**
+The three tasks share intermediate CSV files on the Airflow data volume. If `transform_playlist_data` and `extract_playlist_data` ran concurrently across separate DAG runs, they could race on `raw_playlist_data.csv`. The explicit `>>` chain makes each task's input dependency clear and prevents this class of bug without requiring locks.
+
+---
+
+## Future Improvements
+
+- [ ] dbt transformation layer — replace raw Pandas transforms with versioned, tested SQL models
+- [ ] Migrate to Snowflake or BigQuery for cloud-native analytics at scale
+- [ ] Metabase or Apache Superset dashboard connected directly to PostgreSQL
+- [ ] CI/CD pipeline with GitHub Actions for automated DAG validation and test runs
+- [ ] Celery + Redis for async Spotify API calls in Django (avoid blocking web workers)
+- [ ] Incremental loading using Spotify's `snapshot_id` for change data capture
+- [ ] Data catalog / lineage tracking (Apache Atlas or OpenLineage)
+- [ ] Production deployment: Gunicorn + Nginx for Django, Kubernetes for Airflow
+
+---
 
 ## Skills Demonstrated
 
-✅ **ETL Development**: End-to-end pipeline implementation with reusable modules
-
-✅ **SQL & Data Modeling**: Schema design, UPSERT operations, JSONB, composite keys
-
-✅ **Workflow Orchestration**: Apache Airflow DAG development and scheduling
-
-✅ **Python**: Pandas, SQLAlchemy, Django ORM, API integration
-
-✅ **Database Management**: PostgreSQL, SQLite, Django migrations, query optimization
-
-✅ **Data Quality**: Validation, deduplication, idempotent operations
-
-✅ **Web Development**: Django MVC architecture, user authentication, RESTful interfaces
-
-✅ **DevOps**: Docker Compose, environment management, multi-environment configuration
-
-✅ **API Integration**: OAuth2, pagination, rate limiting, error handling
-
-✅ **Performance Optimization**: Query optimization, bulk operations, connection pooling
-
-✅ **Dual-System Architecture**: Batch processing vs real-time request handling
-
-✅ **REST API Integration**: Django triggers Airflow DAG via authenticated HTTP requests
-
-✅ **Asynchronous Processing**: Decoupled systems with event-driven architecture
-
-✅ **Testing & Quality Assurance**: Unit tests, integration tests, mocking, test coverage (80%+)
-
-## Contact & Acknowledgments
-
-This project was built to demonstrate practical data engineering skills for portfolio and job applications.
-
-**License:** MIT
+`ETL Pipeline Design` · `Apache Airflow DAG Development` · `Docker / Compose` · `PostgreSQL` · `SQLAlchemy` · `Django 5` · `Pandas` · `OAuth2` · `Idempotent UPSERT` · `XCom Task Communication` · `REST API Integration` · `JSON Schema Validation` · `Unit & Integration Testing` · `System Architecture` · `Dual-Pattern ETL`
