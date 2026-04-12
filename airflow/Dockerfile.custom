@@ -1,0 +1,17 @@
+FROM apache/airflow:2.2.3
+
+
+USER airflow
+
+WORKDIR /opt/airflow
+
+COPY requirements.txt /requirements.txt
+# Layer Caching때문에 코드 전체 복사보다 이걸 먼저 함
+
+RUN pip install --no-cache-dir -r /requirements.txt
+
+
+
+COPY dags/ /opt/airflow/dags/
+
+CMD ["webserver"]

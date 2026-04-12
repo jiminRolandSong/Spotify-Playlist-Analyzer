@@ -24,7 +24,7 @@ env/
 .cache
 
 # ⛔️ Airflow 관련 불필요한 파일
-airflow
+airflow/*
 
 # ⛔️ Docker 쓰레기
 *.bak
