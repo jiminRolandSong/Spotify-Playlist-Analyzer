@@ -61,6 +61,7 @@ htmlcov/
 !airflow/dags/
 !airflow/dags/*.py
 !airflow/requirements.txt
+!airflow/Dockerfile.custom
 
 airflow/.asf.yaml
 airflow/.bash_completion
