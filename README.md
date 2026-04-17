@@ -707,7 +707,6 @@ The three tasks share intermediate CSV files on the Airflow data volume. If `tra
 
 ## Future Improvements
 
-- [x] dbt transformation layer — staging + marts layer with `stg_tracks` (view) and `mart_track_stats` (table)
 - [ ] Migrate to Snowflake or BigQuery for cloud-native analytics at scale
 - [ ] Metabase or Apache Superset dashboard connected directly to PostgreSQL
 - [ ] CI/CD pipeline with GitHub Actions for automated DAG validation and test runs
