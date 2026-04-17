@@ -7,16 +7,17 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docker.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?logo=postgresql&logoColor=white)](https://postgresql.org)
 [![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)](https://djangoproject.com)
+[![dbt](https://img.shields.io/badge/dbt-1.7.0-FF694B?logo=dbt&logoColor=white)](https://www.getdbt.com)
 
 ---
 
 ## TL;DR
 
-**What it does:** Extracts Spotify playlist data via API → Transforms & cleans with Pandas → Loads to PostgreSQL → Serves analytics via Django dashboard
+**What it does:** Extracts Spotify playlist data via API → Transforms & cleans with Pandas → Loads to PostgreSQL → dbt runs a staging + marts transformation layer → Serves analytics via Django dashboard
 
-**Why it matters:** Demonstrates idempotent UPSERT operations, Airflow orchestration, shared database architecture, XCom-based task communication, and dual-pattern ETL (scheduled batch + on-demand web)
+**Why it matters:** Demonstrates idempotent UPSERT operations, Airflow orchestration, shared database architecture, XCom-based task communication, dbt analytics engineering patterns, and dual-pattern ETL (scheduled batch + on-demand web)
 
-**Key Tech:** Python · Apache Airflow · PostgreSQL · Django · Docker · Spotify Web API
+**Key Tech:** Python · Apache Airflow · PostgreSQL · dbt Core · Django · Docker · Spotify Web API
 
 **Demo:**
 ```bash
@@ -29,40 +30,68 @@ cd ../playlist_analyzer && python manage.py runserver  # Start Django 5.2 web ap
 
 ## Architecture
 
-This project consists of **two complementary systems** that share a unified PostgreSQL database and reuse the same Extract/Transform scripts.
+This project consists of **three complementary systems** that share a unified PostgreSQL database and reuse the same Extract/Transform scripts.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│               PRODUCTION ETL PIPELINE (Airflow + Docker)            │
-│                                                                      │
-│  Spotify API → extract.py → [raw_playlist_data.csv]                 │
-│                           → transform.py → [cleaned_playlist_data.csv]│
-│                                          → load.py                  │
-│                                               ↓                     │
-│                                    PostgreSQL:playlist_db            │
-│                                  (playlist_tracks table)            │
-│                                  Raw SQL UPSERT via SQLAlchemy       │
-└─────────────────────────────────┬───────────────────────────────────┘
-                                  │ Shared PostgreSQL (port 5433)
-                                  │ Airflow REST API trigger
-┌─────────────────────────────────▼───────────────────────────────────┐
-│                    WEB APPLICATION (Django 5.2)                      │
-│                                                                      │
-│  User → Submit URL → extract.py → transform.py                      │
-│                                         ↓                           │
-│                           load_tracks_to_db() (Django ORM)          │
-│                                         ↓                           │
-│                         PostgreSQL:playlist_db (same container)     │
-│                  (dashboard_playlist & dashboard_track tables)      │
-│                                         ↓                           │
-│                    trigger_airflow_dag() ──→ Airflow REST API        │
-│                    POST /api/v1/dags/playlist_etl_dag/dagRuns        │
-│                                         ↓                           │
-│                           Dashboard with top artists, genres        │
-└─────────────────────────────────────────────────────────────────────┘
+                        +---------------------------+
+                        |    Spotify Web API        |
+                        |  (OAuth2 Client Creds)    |
+                        +---------------------------+
+                                    |
+                    +---------------+---------------+
+                    |                               |
+                    v                               v
+   +---------------------------------+   +----------------------+
+   |  Airflow: playlist_etl_dag      |   |  Django 5.2 Web App  |
+   |                                 |   |                      |
+   |  extract_playlist_data          |   |  User submits URL    |
+   |    -> raw_playlist_data.csv     |   |         |            |
+   |         | (XCom: playlist_id)   |   |  extract + transform |
+   |  transform_playlist_data        |   |  load_tracks_to_db   |
+   |    -> cleaned_playlist_data.csv |   |  (Django ORM)        |
+   |         | (XCom: playlist_id)   |   |         |            |
+   |  load_playlist_data             |   |  Dashboard rendered  |
+   |    UPSERT via SQLAlchemy        |   |  (top artists/genres)|
+   +---------------------------------+   |         |            |
+                    |                    |  trigger_airflow_dag |
+                    |                    |  POST /dagRuns (async|
+                    |                    |  5s timeout)         |
+                    |                    +----------------------+
+                    |                               |
+                    v                               |
+   +----------------------------------------------------+
+   |          PostgreSQL 13 — playlist_db (port 5433)   |
+   |                                                    |
+   |  playlist_tracks        (raw ETL target, TEXT arr) |
+   |  dashboard_playlist     (Django ORM, JSONB)        |
+   |  dashboard_track        (Django ORM, JSONB)        |
+   |  stg_tracks             (dbt view)                 |
+   |  mart_track_stats       (dbt table)                |
+   +----------------------------------------------------+
+                    |
+                    | (ExternalTaskSensor: waits for load_playlist_data)
+                    v
+   +---------------------------------+
+   |  Airflow: dbt_transformation_dag|
+   |                                 |
+   |  dbt run                        |
+   |    stg_tracks (view)            |
+   |      clean + type-cast          |
+   |      playlist_tracks            |
+   |         |                       |
+   |    mart_track_stats (table)     |
+   |      album-level aggregations   |
+   |      avg/max/min popularity     |
+   |         |                       |
+   |  dbt test                       |
+   |    schema + data quality checks |
+   +---------------------------------+
 ```
 
-**Key architectural decision:** Django does not block on Spotify API processing. It runs ETL inline for the user-facing dashboard, then immediately triggers an Airflow DAG via authenticated REST API call to load the same data into the centralized data warehouse asynchronously. The user never waits for the warehouse write.
+**Key architectural decisions:**
+- **Django** runs ETL inline for immediate user feedback, then fires an async Airflow REST API trigger (5s timeout). The user never waits for the warehouse write.
+- **dbt** runs in a dedicated container (`airflow-dbt-1`) triggered by a separate `dbt_transformation_dag` that gates on the ETL DAG via `ExternalTaskSensor`. Transformation logic stays versioned and testable independently of ingest.
+- **Two DAGs, one database:** `playlist_etl_dag` owns ingest; `dbt_transformation_dag` owns transformation. Each has a single responsibility.
 
 ---
 
@@ -71,6 +100,7 @@ This project consists of **two complementary systems** that share a unified Post
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | Orchestration | Apache Airflow (LocalExecutor) | 2.2.3 |
+| Analytics transformation | dbt Core (Postgres adapter, dedicated container) | 1.7.0 |
 | Containerization | Docker + Docker Compose | — |
 | Backend / API | Django + Django REST views | 5.2 |
 | Data transformation | Python, Pandas | 2.2+ |
@@ -168,8 +198,18 @@ spotify-playlist-analyzer/
 ├── airflow/                              # Airflow submodule + project DAGs
 │   ├── dags/
 │   │   ├── playlist_etl_dag.py           # Main DAG: extract_playlist_data → transform_playlist_data → load_playlist_data
+│   │   ├── dbt_dag.py                    # dbt DAG: ExternalTaskSensor → dbt run → dbt test
 │   │   └── hello.py                      # Sanity-check DAG (hello_airflow)
-│   └── docker-compose.yml                # PostgreSQL 13 + Airflow 2.2.3 (webserver, scheduler, worker)
+│   └── docker-compose.yml                # PostgreSQL 13 + Airflow 2.2.3 + dbt 1.7.0 containers
+│
+├── spotify_dbt/                          # dbt project (mounted into airflow-dbt-1 container)
+│   ├── dbt_project.yml                   # Project config: staging→view, marts→table
+│   ├── profiles.yml                      # PostgreSQL connection profile
+│   └── models/
+│       ├── staging/
+│       │   └── stg_tracks.sql            # View: clean + type-cast playlist_tracks
+│       └── marts/
+│           └── mart_track_stats.sql      # Table: album-level aggregation via ref(stg_tracks)
 │
 ├── playlist_analyzer/                    # Django 5.2 web application
 │   ├── dashboard/
@@ -376,6 +416,123 @@ curl -X POST http://localhost:8080/api/v1/dags/playlist_etl_dag/dagRuns \
 
 ---
 
+## dbt Transformation Layer
+
+dbt Core 1.7.0 runs in a dedicated Docker container (`airflow-dbt-1`, image: `ghcr.io/dbt-labs/dbt-postgres:1.7.0`) on the same `airflow-net` bridge network as PostgreSQL. It reads from the raw `playlist_tracks` table loaded by Airflow and produces clean, analytics-ready views and tables in `playlist_db`.
+
+### DAG: `dbt_transformation_dag`
+
+| Property | Value |
+|----------|-------|
+| DAG ID | `dbt_transformation_dag` |
+| Schedule | `None` (triggered by sensor) |
+| Trigger condition | `ExternalTaskSensor` waits for `load_playlist_data` in `playlist_etl_dag` |
+| Tags | `["dbt", "spotify"]` |
+| Retries | 1 (retry delay: 5 minutes) |
+
+**Task graph:**
+```
+wait_for_etl (ExternalTaskSensor) >> dbt_run (BashOperator) >> dbt_test (BashOperator)
+```
+
+Tasks execute `docker exec airflow-dbt-1 dbt run` and `dbt test` from within the Airflow scheduler container, delegating all dbt work into the isolated dbt container.
+
+### Models
+
+#### `staging/stg_tracks` — View
+
+Reads directly from the raw `playlist_tracks` table (defined as a dbt `source`). Selects and type-casts the columns needed downstream, dropping any rows where `track_id IS NULL`.
+
+```sql
+SELECT
+    track_id,
+    track_name,
+    track_duration_sec,
+    track_popularity,
+    album_id,
+    album_name,
+    album_release_date::DATE AS release_date,
+    release_year,
+    artist_names,
+    track_genres,
+    playlist_id
+FROM {{ source('spotify_raw', 'playlist_tracks') }}
+WHERE track_id IS NOT NULL
+```
+
+Materialized as a **view** — always reflects the latest state of the source table without storing duplicate data.
+
+#### `marts/mart_track_stats` — Table
+
+Builds album-level aggregate statistics on top of `stg_tracks` using `{{ ref('stg_tracks') }}`, which makes the dependency explicit and lets dbt enforce run order.
+
+```sql
+SELECT
+    album_name,
+    release_year,
+    COUNT(*)                                    AS track_count,
+    ROUND(AVG(track_popularity), 1)             AS avg_popularity,
+    ROUND(AVG(track_duration_sec)::NUMERIC, 1)  AS avg_duration_sec,
+    MAX(track_popularity)                       AS max_popularity,
+    MIN(track_popularity)                       AS min_popularity
+FROM {{ ref('stg_tracks') }}
+GROUP BY album_name, release_year
+ORDER BY avg_popularity DESC
+```
+
+Materialized as a **table** — persisted for downstream BI queries without re-running the aggregation on each read.
+
+### Model Materialization Strategy
+
+| Model | Materialization | Why |
+|-------|----------------|-----|
+| `stg_tracks` | View | Zero storage cost; always fresh; source is append-only |
+| `mart_track_stats` | Table | Pre-aggregated for fast analytics reads; aggregation is expensive to recompute per query |
+
+### Project Structure
+
+```
+spotify_dbt/
+├── dbt_project.yml          # Project config: staging→view, marts→table
+├── profiles.yml             # PostgreSQL connection (playlist_db via airflow-net)
+├── models/
+│   ├── staging/
+│   │   └── stg_tracks.sql   # Source: playlist_tracks → clean view
+│   └── marts/
+│       └── mart_track_stats.sql  # Ref: stg_tracks → album aggregation table
+├── analyses/
+├── macros/
+├── seeds/
+├── snapshots/
+└── tests/                   # dbt schema + data tests (run via dbt test)
+```
+
+### Running dbt manually
+
+```bash
+# Exec into the running dbt container
+docker exec -it airflow-dbt-1 bash
+
+# Inside the container
+dbt run          # Build all models (stg_tracks view + mart_track_stats table)
+dbt test         # Run schema and data quality tests
+dbt run --select stg_tracks          # Run a single model
+dbt run --select mart_track_stats    # Run only the marts model
+
+# Or invoke directly from the host
+docker exec airflow-dbt-1 dbt run
+docker exec airflow-dbt-1 dbt test
+```
+
+### Verifying dbt output in PostgreSQL
+
+```bash
+docker exec airflow-postgres-1 psql -U airflow -d playlist_db \
+  -c "SELECT album_name, track_count, avg_popularity FROM mart_track_stats LIMIT 10;"
+```
+
+---
+
 ## Django URL Routes
 
 | Method | URL | View | Auth Required |
@@ -550,7 +707,7 @@ The three tasks share intermediate CSV files on the Airflow data volume. If `tra
 
 ## Future Improvements
 
-- [ ] dbt transformation layer — replace raw Pandas transforms with versioned, tested SQL models
+- [x] dbt transformation layer — staging + marts layer with `stg_tracks` (view) and `mart_track_stats` (table)
 - [ ] Migrate to Snowflake or BigQuery for cloud-native analytics at scale
 - [ ] Metabase or Apache Superset dashboard connected directly to PostgreSQL
 - [ ] CI/CD pipeline with GitHub Actions for automated DAG validation and test runs
@@ -563,4 +720,4 @@ The three tasks share intermediate CSV files on the Airflow data volume. If `tra
 
 ## Skills Demonstrated
 
-`ETL Pipeline Design` · `Apache Airflow DAG Development` · `Docker / Compose` · `PostgreSQL` · `SQLAlchemy` · `Django 5` · `Pandas` · `OAuth2` · `Idempotent UPSERT` · `XCom Task Communication` · `REST API Integration` · `JSON Schema Validation` · `Unit & Integration Testing` · `System Architecture` · `Dual-Pattern ETL`
+`ETL Pipeline Design` · `Apache Airflow DAG Development` · `dbt Core (Staging + Marts)` · `Docker / Compose` · `PostgreSQL` · `SQLAlchemy` · `Django 5` · `Pandas` · `OAuth2` · `Idempotent UPSERT` · `XCom Task Communication` · `REST API Integration` · `JSON Schema Validation` · `Unit & Integration Testing` · `System Architecture` · `Dual-Pattern ETL`
