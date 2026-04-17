@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_tracks
+    description: "Cleaned Spotify track data"
+    columns:
+      - name: track_id
+        description: "Primary key"
+        tests:
+          - not_null
+      - name: track_popularity
+        tests:
+          - not_null
+      - name: album_name
+        tests:
+          - not_null

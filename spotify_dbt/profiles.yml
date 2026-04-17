@@ -1,0 +1,12 @@
+spotify_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres
+      port: 5432
+      user: airflow
+      password: airflow
+      dbname: playlist_db
+      schema: dbt_dev
+      threads: 1

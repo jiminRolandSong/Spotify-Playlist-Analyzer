@@ -25,7 +25,7 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__FERNET_KEY=ss5TtELN0BFLuTxecZuJLbQ3xNlviJfD8dEcowW34ug=
-      - _PIP_ADDITIONAL_REQUIREMENTS=spotipy pandas python-dotenv psycopg2-binary
+      - _PIP_ADDITIONAL_REQUIREMENTS=spotipy pandas python-dotenv psycopg2-binary dbt-postgres
       - AIRFLOW__WEBSERVER__SECRET_KEY=zHxNBLQ2oGe_64Pw7jSFZUvLBbiXH2Ix1pU7RB_97p4
       - AIRFLOW__API__AUTH_BACKEND=airflow.api.auth.backend.basic_auth
     networks:
@@ -90,6 +90,20 @@ services:
       -  ./data:/opt/airflow/data
       - ../.env.docker:/opt/airflow/.env.docker
 
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.7.0
+    volumes:
+      - ./../spotify_dbt:/usr/app/dbt
+      - ./../spotify_dbt/profiles.yml:/root/.dbt/profiles.yml
+    networks:
+      - airflow-net
+    depends_on:
+      - postgres
+    environment:
+      - DBT_PROFILES_DIR=/root/.dbt
+    working_dir: /usr/app/dbt
+    entrypoint: ["tail", "-f", "/dev/null"]  # 컨테이너 계속 살아있게
+
 networks:
   airflow-net:
     driver: bridge
@@ -104,6 +118,8 @@ volumes:
       type: none
       device: /var/lib/airflow/sqlalchemy
       o: bind
+
+
 
 
   

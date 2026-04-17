@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: spotify_raw
+    database: playlist_db
+    schema: public
+    tables:
+      - name: playlist_tracks
