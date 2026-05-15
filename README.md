@@ -526,12 +526,14 @@ docker exec airflow-dbt-1 dbt test
 
 ### Verifying dbt output in PostgreSQL
 
-[![dbt Tests](./images/dbt_test_results.png)](./images/dbt_test_results.png)
-
 ```bash
 docker exec airflow-postgres-1 psql -U airflow -d playlist_db \
   -c "SELECT album_name, track_count, avg_popularity FROM mart_track_stats LIMIT 10;"
 ```
+
+### dbt Test Results
+
+[![dbt Tests](./images/dbt_test_results.png)](./images/dbt_test_results.png)
 
 ---
 
