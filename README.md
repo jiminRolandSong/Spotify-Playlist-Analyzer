@@ -9,7 +9,7 @@
 [![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)](https://djangoproject.com)
 [![dbt](https://img.shields.io/badge/dbt-1.7.0-FF694B?logo=dbt&logoColor=white)](https://www.getdbt.com)
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://spotify-playlist-analyzer.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://jiminspa.streamlit.app)
 
 ---
 
@@ -17,7 +17,7 @@
 
 Try the live Streamlit dashboard — no setup required:
 
-**[spotify-playlist-analyzer.streamlit.app](https://spotify-playlist-analyzer.streamlit.app)**
+**[jiminspa.streamlit.app](https://jiminspa.streamlit.app)**
 
 | Page | What it shows |
 |------|--------------|
