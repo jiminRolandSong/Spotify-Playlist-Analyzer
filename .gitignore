@@ -16,6 +16,10 @@ env/
 .claude/
 *.session.sql
 
+# ⛔️ Streamlit secrets (never commit real credentials)
+.streamlit/secrets.toml
+.env.supabase
+
 # ⛔️ 로그, 임시 파일
 *.log
 *.pid

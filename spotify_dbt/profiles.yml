@@ -10,3 +10,13 @@ spotify_dbt:
       dbname: playlist_db
       schema: dbt_dev
       threads: 1
+    supabase:
+      type: postgres
+      host: aws-1-us-east-1.pooler.supabase.com
+      port: 6543
+      user: postgres.awipqsxqjcebdgusizfd
+      password: "nE*Hbt?kw9,QJ%D"
+      dbname: postgres
+      schema: public
+      threads: 1
+      sslmode: require

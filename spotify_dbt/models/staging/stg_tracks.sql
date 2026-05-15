@@ -9,7 +9,7 @@ SELECT
     album_id,
     album_name,
     album_release_date::DATE AS release_date,
-    release_year,
+    EXTRACT(YEAR FROM album_release_date::DATE)::INTEGER AS release_year,
     artist_names,
     track_genres,
     playlist_id
