@@ -13,32 +13,56 @@
 
 ---
 
-## Live Demo
+## Deployment Modes
 
-Try the live Streamlit dashboard — no setup required:
+This project ships in two forms — a locally-runnable full-stack pipeline and a publicly accessible cloud demo.
+
+### 1. Live Demo — Streamlit Cloud
+
+The deployed version is built for visibility: anyone can log in, analyze a Spotify playlist, and explore the analytics dashboard without any local setup.
 
 **[jiminspa.streamlit.app](https://jiminspa.streamlit.app)**
 
-| Page | What it shows |
-|------|--------------|
-| **Analyze Playlist** | Paste any Spotify playlist URL and explore tracks, top artists, and popularity distribution live |
-| **My Dashboard** | Your saved playlists with genre breakdown, release year trends, and full track table |
-| **Data Pipeline** | Full pipeline architecture, tech stack, and live dbt mart output |
+| Stack | Technology |
+|-------|-----------|
+| Frontend | Streamlit Cloud |
+| Auth | Supabase Auth (email + password) |
+| Database | Supabase PostgreSQL (cloud) |
+| Transformations | dbt Core (`stg_tracks` → `mart_track_stats`) |
+| Data source | Spotify Web API |
 
-### Sample login
+**Sample login**
 
 | Field | Value |
 |-------|-------|
 | Email | `sampleemail@jiminsong.com` |
 | Password | `samplePASSword!` |
 
-### Example playlist to try
-
+**Example playlist to try**
 ```
 https://open.spotify.com/playlist/67PaYmoZUrRaSXaWEIJglP
 ```
 
-Paste this into the **Analyze Playlist** page to see the full pipeline in action.
+---
+
+### 2. Local Full-Stack Pipeline
+
+The local version runs the complete orchestration-heavy stack: Airflow schedules and monitors the ETL pipeline, Docker isolates each service, and Django serves the web dashboard.
+
+```bash
+cd airflow && docker compose up -d                         # Airflow + PostgreSQL
+cd ../playlist_analyzer && python manage.py runserver      # Django dashboard
+# Django: http://localhost:8000  |  Airflow: http://localhost:8080
+```
+
+| Stack | Technology |
+|-------|-----------|
+| Orchestration | Apache Airflow 2.2.3 (LocalExecutor) |
+| Containerisation | Docker + Docker Compose |
+| Web dashboard | Django 5.2 |
+| Database | PostgreSQL 13 (Docker, port 5433) |
+| Transformations | dbt Core 1.7.0 (dedicated container) |
+| Data source | Spotify Web API |
 
 ---
 
@@ -61,7 +85,52 @@ cd ../playlist_analyzer && python manage.py runserver  # Start Django 5.2 web ap
 
 ## Architecture
 
-This project consists of **three complementary systems** that share a unified PostgreSQL database and reuse the same Extract/Transform scripts.
+### Live Demo Architecture — Streamlit Cloud
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Spotify Web API                    │
+│         track metadata · genres · popularity        │
+└──────────────────────┬──────────────────────────────┘
+                       │  spotipy
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│              Streamlit Cloud App                    │
+│  ┌─────────────────────────────────────────────┐   │
+│  │  Supabase Auth  — email + password login    │   │
+│  └──────────────────┬──────────────────────────┘   │
+│                     │  authenticated user_id        │
+│  ┌──────────────────▼──────────────────────────┐   │
+│  │  Analyze Playlist page                      │   │
+│  │  · fetch tracks from Spotify API            │   │
+│  │  · enrich with artist genres               │   │
+│  │  · UPSERT into playlist_tracks (per user)  │   │
+│  └──────────────────┬──────────────────────────┘   │
+└─────────────────────┼───────────────────────────────┘
+                      │  psycopg2 / SQLAlchemy
+                      ▼
+┌─────────────────────────────────────────────────────┐
+│         PostgreSQL — Supabase (cloud)               │
+│         table: playlist_tracks (user_id PK)         │
+└──────────────────────┬──────────────────────────────┘
+                       │  dbt run --target supabase
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│                   dbt Core                          │
+│   stg_tracks (view)  →  mart_track_stats (table)   │
+│   type casting · null filter · album aggregates     │
+└──────────────────────┬──────────────────────────────┘
+                       │  SQL query
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│              Streamlit Dashboard                    │
+│   My Dashboard · Data Pipeline · Analyze Playlist  │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+### Local Full-Stack Architecture — Airflow + Django
 
 ```
                         +---------------------------+
@@ -74,33 +143,33 @@ This project consists of **three complementary systems** that share a unified Po
                     v                               v
    +---------------------------------+   +----------------------+
    |  Airflow: playlist_etl_dag      |   |  Django 5.2 Web App  |
-   |                                 |   |                      |
-   |  extract_playlist_data          |   |  User submits URL    |
-   |    -> raw_playlist_data.csv     |   |         |            |
-   |         | (XCom: playlist_id)   |   |  extract + transform |
-   |  transform_playlist_data        |   |  load_tracks_to_db   |
-   |    -> cleaned_playlist_data.csv |   |  (Django ORM)        |
-   |         | (XCom: playlist_id)   |   |         |            |
-   |  load_playlist_data             |   |  Dashboard rendered  |
-   |    UPSERT via SQLAlchemy        |   |  (top artists/genres)|
-   +---------------------------------+   |         |            |
-                    |                    |  trigger_airflow_dag |
+   |  (Docker — airflow-scheduler)   |   |                      |
+   |                                 |   |  User submits URL    |
+   |  extract_playlist_data          |   |         |            |
+   |    -> raw_playlist_data.csv     |   |  extract + transform |
+   |         | (XCom: playlist_id)   |   |  load_tracks_to_db   |
+   |  transform_playlist_data        |   |  (Django ORM)        |
+   |    -> cleaned_playlist_data.csv |   |         |            |
+   |         | (XCom: playlist_id)   |   |  Dashboard rendered  |
+   |  load_playlist_data             |   |  (top artists/genres)|
+   |    UPSERT via SQLAlchemy        |   |         |            |
+   +---------------------------------+   |  trigger_airflow_dag |
                     |                    |  POST /dagRuns (async|
                     |                    |  5s timeout)         |
                     |                    +----------------------+
-                    |                               |
                     v                               |
    +----------------------------------------------------+
-   |          PostgreSQL 13 — playlist_db (port 5433)   |
+   |       PostgreSQL 13 — playlist_db (port 5433)      |
+   |  (Docker — airflow-postgres-1)                     |
    |                                                    |
-   |  playlist_tracks        (raw ETL target, TEXT arr) |
-   |  dashboard_playlist     (Django ORM, JSONB)        |
-   |  dashboard_track        (Django ORM, JSONB)        |
-   |  stg_tracks             (dbt view)                 |
-   |  mart_track_stats       (dbt table)                |
+   |  playlist_tracks      (Airflow ETL target)         |
+   |  dashboard_playlist   (Django ORM)                 |
+   |  dashboard_track      (Django ORM)                 |
+   |  stg_tracks           (dbt view)                   |
+   |  mart_track_stats     (dbt table)                  |
    +----------------------------------------------------+
                     |
-                    | (ExternalTaskSensor: waits for load_playlist_data)
+                    | ExternalTaskSensor → dbt_transformation_dag
                     v
    +---------------------------------+
    |  Airflow: dbt_transformation_dag|
