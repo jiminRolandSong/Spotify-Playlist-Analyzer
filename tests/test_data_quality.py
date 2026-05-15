@@ -155,7 +155,10 @@ class TestDataTypeValidation(unittest.TestCase):
 
     def test_track_id_is_string(self):
         """Test that track_id is string type"""
-        self.assertEqual(self.sample_df['track_id'].dtype, 'object')  # object = string in pandas
+        self.assertTrue(
+            self.sample_df['track_id'].dtype == 'object' or
+            hasattr(self.sample_df['track_id'].dtype, 'name') and 'string' in self.sample_df['track_id'].dtype.name.lower()
+        )
         self.assertTrue(all(isinstance(x, str) for x in self.sample_df['track_id']))
 
     def test_duration_ms_is_integer(self):

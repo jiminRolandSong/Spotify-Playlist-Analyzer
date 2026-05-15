@@ -34,7 +34,7 @@ jobs:
       DB_NAME: ":memory:"
       SPOTIPY_CLIENT_ID: fake-client-id
       SPOTIPY_CLIENT_SECRET: fake-client-secret
-      DJANGO_SETTINGS_MODULE: playlist_analyzer.playlist_analyzer.settings
+      DJANGO_SETTINGS_MODULE: playlist_analyzer.settings
 
     steps:
       - uses: actions/checkout@v4
