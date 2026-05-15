@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-etl:
+    name: ETL Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest pytest-cov pandas spotipy python-dotenv requests jsonschema
+
+      - name: Run ETL tests
+        run: pytest tests/ --tb=short --cov=scripts --cov-report=term-missing
+
+  test-django:
+    name: Django Tests
+    runs-on: ubuntu-latest
+
+    env:
+      DB_ENGINE: django.db.backends.sqlite3
+      DB_NAME: ":memory:"
+      SPOTIPY_CLIENT_ID: fake-client-id
+      SPOTIPY_CLIENT_SECRET: fake-client-secret
+      DJANGO_SETTINGS_MODULE: playlist_analyzer.playlist_analyzer.settings
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest pytest-django
+
+      - name: Run Django tests
+        working-directory: playlist_analyzer
+        run: python manage.py test dashboard users --verbosity=2

@@ -1,0 +1,47 @@
+name: dbt Validate
+
+on:
+  push:
+    paths:
+      - "spotify_dbt/**"
+  pull_request:
+    paths:
+      - "spotify_dbt/**"
+
+jobs:
+  dbt-compile:
+    name: dbt Compile Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt
+        run: pip install dbt-postgres
+
+      - name: Write CI profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'EOF'
+          spotify_dbt:
+            target: ci
+            outputs:
+              ci:
+                type: postgres
+                host: localhost
+                port: 5432
+                user: ci
+                password: ci
+                dbname: ci
+                schema: public
+                threads: 1
+          EOF
+
+      - name: dbt compile
+        working-directory: spotify_dbt
+        run: dbt compile --target ci

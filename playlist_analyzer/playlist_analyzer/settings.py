@@ -83,16 +83,26 @@ WSGI_APPLICATION = 'playlist_analyzer.wsgi.application'
 
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'playlist_db'),
-        'USER': os.getenv('DB_USER', 'airflow'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'airflow'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5433'),
+_db_engine = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
+
+if _db_engine == 'django.db.backends.sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': _db_engine,
+            'NAME': os.getenv('DB_NAME', 'playlist_db'),
+            'USER': os.getenv('DB_USER', 'airflow'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'airflow'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5433'),
+        }
+    }
 
 
 # Password validation
