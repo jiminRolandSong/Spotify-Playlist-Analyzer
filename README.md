@@ -9,6 +9,37 @@
 [![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)](https://djangoproject.com)
 [![dbt](https://img.shields.io/badge/dbt-1.7.0-FF694B?logo=dbt&logoColor=white)](https://www.getdbt.com)
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://spotify-playlist-analyzer.streamlit.app)
+
+---
+
+## Live Demo
+
+Try the live Streamlit dashboard — no setup required:
+
+**[spotify-playlist-analyzer.streamlit.app](https://spotify-playlist-analyzer.streamlit.app)**
+
+| Page | What it shows |
+|------|--------------|
+| **Analyze Playlist** | Paste any Spotify playlist URL and explore tracks, top artists, and popularity distribution live |
+| **My Dashboard** | Your saved playlists with genre breakdown, release year trends, and full track table |
+| **Data Pipeline** | Full pipeline architecture, tech stack, and live dbt mart output |
+
+### Sample login
+
+| Field | Value |
+|-------|-------|
+| Email | `sampleemail@jiminsong.com` |
+| Password | `samplePASSword!` |
+
+### Example playlist to try
+
+```
+https://open.spotify.com/playlist/67PaYmoZUrRaSXaWEIJglP
+```
+
+Paste this into the **Analyze Playlist** page to see the full pipeline in action.
+
 ---
 
 ## TL;DR
@@ -711,6 +742,7 @@ The three tasks share intermediate CSV files on the Airflow data volume. If `tra
 
 ## Future Improvements
 
+- [x] Streamlit Cloud dashboard with Supabase-backed per-user analytics
 - [ ] Migrate to Snowflake or BigQuery for cloud-native analytics at scale
 - [ ] Metabase or Apache Superset dashboard connected directly to PostgreSQL
 - [ ] CI/CD pipeline with GitHub Actions for automated DAG validation and test runs
