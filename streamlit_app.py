@@ -85,7 +85,9 @@ def query_df(sql: str, params=None) -> pd.DataFrame:
 
 
 def run_dbt():
-    import subprocess, sys
+    import subprocess, shutil
+    if not shutil.which("dbt"):
+        return
     dbt_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spotify_dbt")
     subprocess.Popen(
         ["dbt", "run", "--target", "supabase"],
