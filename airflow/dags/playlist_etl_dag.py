@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from datetime import datetime, timedelta
 import sys
 import os
@@ -92,4 +93,9 @@ with DAG(
         python_callable=load_task,
     )
 
-    extract_op >> transform_op >> load_op
+    trigger_dbt = TriggerDagRunOperator(
+        task_id="trigger_dbt_transformation",
+        trigger_dag_id="dbt_transformation_dag",
+    )
+
+    extract_op >> transform_op >> load_op >> trigger_dbt

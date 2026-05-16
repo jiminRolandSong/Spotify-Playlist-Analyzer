@@ -1,7 +1,71 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.exceptions import AirflowException
+from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
+import http.client
+import json
+import os
+import socket
+
+DOCKER_SOCKET_PATH = os.getenv("DOCKER_SOCKET_PATH", "/var/run/docker.sock")
+DBT_CONTAINER_NAME = os.getenv("DBT_CONTAINER_NAME", "airflow-dbt-1")
+
+
+class UnixSocketHTTPConnection(http.client.HTTPConnection):
+    def __init__(self, socket_path):
+        super().__init__("localhost")
+        self.socket_path = socket_path
+
+    def connect(self):
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.connect(self.socket_path)
+
+
+def docker_request(method, path, payload=None):
+    body = json.dumps(payload).encode("utf-8") if payload is not None else None
+    headers = {"Content-Type": "application/json"} if payload is not None else {}
+    conn = UnixSocketHTTPConnection(DOCKER_SOCKET_PATH)
+    conn.request(method, path, body=body, headers=headers)
+    response = conn.getresponse()
+    data = response.read()
+    conn.close()
+
+    if response.status >= 300:
+        raise AirflowException(
+            "Docker API request failed: {} {} -> {} {}".format(
+                method, path, response.status, data.decode("utf-8", errors="replace")
+            )
+        )
+    return data
+
+
+def run_dbt_command(command):
+    create_payload = {
+        "AttachStdout": True,
+        "AttachStderr": True,
+        "Tty": True,
+        "Cmd": ["sh", "-lc", "cd /usr/app/dbt && {}".format(command)],
+        "Env": ["DBT_PROFILES_DIR=/root/.dbt"],
+    }
+    create_response = docker_request(
+        "POST",
+        "/containers/{}/exec".format(DBT_CONTAINER_NAME),
+        create_payload,
+    )
+    exec_id = json.loads(create_response.decode("utf-8"))["Id"]
+
+    output = docker_request(
+        "POST",
+        "/exec/{}/start".format(exec_id),
+        {"Detach": False, "Tty": True},
+    )
+    if output:
+        print(output.decode("utf-8", errors="replace"))
+
+    inspect_response = docker_request("GET", "/exec/{}/json".format(exec_id))
+    exit_code = json.loads(inspect_response.decode("utf-8")).get("ExitCode")
+    if exit_code != 0:
+        raise AirflowException("dbt command failed with exit code {}".format(exit_code))
 
 default_args = {
     "owner": "airflow",
@@ -19,23 +83,16 @@ with DAG(
     tags=["dbt", "spotify"],
 ) as dag:
 
-    wait_for_etl = ExternalTaskSensor(
-        task_id="wait_for_etl",
-        external_dag_id="playlist_etl_dag",
-        external_task_id="load_playlist_data",
-        timeout=600,
-        poke_interval=30,
-        mode="poke",
-    )
-
-    dbt_run = BashOperator(
+    dbt_run = PythonOperator(
         task_id="dbt_run",
-        bash_command="docker exec airflow-dbt-1 dbt run",
+        python_callable=run_dbt_command,
+        op_args=["dbt run"],
     )
 
-    dbt_test = BashOperator(
+    dbt_test = PythonOperator(
         task_id="dbt_test",
-        bash_command="docker exec airflow-dbt-1 dbt test",
+        python_callable=run_dbt_command,
+        op_args=["dbt test"],
     )
 
-    wait_for_etl >> dbt_run >> dbt_test
+    dbt_run >> dbt_test

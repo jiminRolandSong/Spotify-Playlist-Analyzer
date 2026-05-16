@@ -169,7 +169,7 @@ cd ../playlist_analyzer && python manage.py runserver  # Start Django 5.2 web ap
    |  mart_track_stats     (dbt table)                  |
    +----------------------------------------------------+
                     |
-                    | ExternalTaskSensor → dbt_transformation_dag
+                    | TriggerDagRunOperator → dbt_transformation_dag
                     v
    +---------------------------------+
    |  Airflow: dbt_transformation_dag|
@@ -190,7 +190,7 @@ cd ../playlist_analyzer && python manage.py runserver  # Start Django 5.2 web ap
 
 **Key architectural decisions:**
 - **Django** runs ETL inline for immediate user feedback, then fires an async Airflow REST API trigger (5s timeout). The user never waits for the warehouse write.
-- **dbt** runs in a dedicated container (`airflow-dbt-1`) triggered by a separate `dbt_transformation_dag` that gates on the ETL DAG via `ExternalTaskSensor`. Transformation logic stays versioned and testable independently of ingest.
+- **dbt** runs in a dedicated container (`airflow-dbt-1`) through a separate `dbt_transformation_dag` triggered by the ETL DAG after `load_playlist_data` succeeds. Transformation logic stays versioned and testable independently of ingest.
 - **Two DAGs, one database:** `playlist_etl_dag` owns ingest; `dbt_transformation_dag` owns transformation. Each has a single responsibility.
 
 ---
@@ -297,8 +297,8 @@ spotify-playlist-analyzer/
 │
 ├── airflow/                              # Airflow submodule + project DAGs
 │   ├── dags/
-│   │   ├── playlist_etl_dag.py           # Main DAG: extract_playlist_data → transform_playlist_data → load_playlist_data
-│   │   ├── dbt_dag.py                    # dbt DAG: ExternalTaskSensor → dbt run → dbt test
+│   │   ├── playlist_etl_dag.py           # Main DAG: extract → transform → load → trigger dbt
+│   │   ├── dbt_dag.py                    # dbt DAG: dbt run → dbt test
 │   │   └── hello.py                      # Sanity-check DAG (hello_airflow)
 │   └── docker-compose.yml                # PostgreSQL 13 + Airflow 2.2.3 + dbt 1.7.0 containers
 │
@@ -510,7 +510,7 @@ CREATE TABLE dashboard_track (
 
 **Task graph:**
 ```
-extract_playlist_data >> transform_playlist_data >> load_playlist_data
+extract_playlist_data >> transform_playlist_data >> load_playlist_data >> trigger_dbt_transformation
 ```
 
 All tasks are `PythonOperator` with `**context` passed through, enabling XCom access. The linear dependency chain (`>>`) was a deliberate choice to prevent race conditions on shared intermediate CSV files — if tasks ran in parallel, a concurrent write to `raw_playlist_data.csv` could corrupt the transform step.
@@ -536,17 +536,17 @@ dbt Core 1.7.0 runs in a dedicated Docker container (`airflow-dbt-1`, image: `gh
 | Property | Value |
 |----------|-------|
 | DAG ID | `dbt_transformation_dag` |
-| Schedule | `None` (triggered by sensor) |
-| Trigger condition | `ExternalTaskSensor` waits for `load_playlist_data` in `playlist_etl_dag` |
+| Schedule | `None` (triggered by ETL DAG) |
+| Trigger condition | `TriggerDagRunOperator` runs after `load_playlist_data` succeeds in `playlist_etl_dag` |
 | Tags | `["dbt", "spotify"]` |
 | Retries | 1 (retry delay: 5 minutes) |
 
 **Task graph:**
 ```
-wait_for_etl (ExternalTaskSensor) >> dbt_run (BashOperator) >> dbt_test (BashOperator)
+dbt_run (PythonOperator) >> dbt_test (PythonOperator)
 ```
 
-Tasks execute `docker exec airflow-dbt-1 dbt run` and `dbt test` from within the Airflow scheduler container, delegating all dbt work into the isolated dbt container.
+Tasks call the Docker Engine API through the mounted Docker socket and execute `dbt run` / `dbt test` inside the isolated `airflow-dbt-1` container. This avoids requiring the Docker CLI inside the Airflow scheduler image.
 
 ### Models
 

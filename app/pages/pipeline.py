@@ -15,8 +15,9 @@ def render():
     )
 
     st.info(
-        "**Note:** The dbt mart (`mart_track_stats`) is pre-built and updated manually by running "
-        "`dbt run --target supabase` locally. The live demo queries the latest snapshot."
+        "**Note:** In the local Airflow pipeline, `playlist_etl_dag` triggers "
+        "`dbt_transformation_dag` after `load_playlist_data` succeeds. The Streamlit demo "
+        "queries the latest available PostgreSQL/dbt mart snapshot."
     )
 
     st.markdown("---")
@@ -110,13 +111,17 @@ def render():
         st.markdown("""
 `airflow/dags/playlist_etl_dag.py`
 - Runs the full ETL on trigger
-- Chains extract → transform → load → dbt
+- Chains extract → transform → load → trigger dbt
 - Dockerised with `docker-compose`
 - Airflow logs every run with status
         """)
     with col4:
         st.markdown("##### Transform (dbt)")
         st.markdown("""
+`airflow/dags/dbt_dag.py`
+- Runs after ETL via `TriggerDagRunOperator`
+- Executes dbt inside `airflow-dbt-1`
+
 `spotify_dbt/models/`
 - `stg_tracks` — staging view:
   casts types, filters nulls
@@ -129,7 +134,7 @@ def render():
 
     # ── Live mart output ──────────────────────────────────────────────────────
     st.subheader("Live dbt Output")
-    st.caption("mart_track_stats — pre-built album-level aggregates from dbt")
+    st.caption("mart_track_stats — album-level aggregates produced by dbt")
 
     try:
         mart_df = query_df("SELECT * FROM mart_track_stats ORDER BY avg_popularity DESC")
@@ -139,7 +144,7 @@ def render():
         return
 
     if mart_df.empty:
-        st.info("mart_track_stats is empty — run `dbt run --target supabase` in the spotify_dbt folder first.")
+        st.info("mart_track_stats is empty — run the Airflow ETL pipeline or dbt job first.")
         return
 
     try:
