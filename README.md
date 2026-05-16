@@ -111,7 +111,7 @@ cd ../playlist_analyzer && python manage.py runserver  # Start Django 5.2 web ap
                       ▼
 ┌─────────────────────────────────────────────────────┐
 │         PostgreSQL — Supabase (cloud)               │
-│         table: playlist_tracks (user_id PK)         │
+│         playlist_tracks (per-user playlist storage) │
 └──────────────────────┬──────────────────────────────┘
                        │  dbt run --target supabase
                        ▼
