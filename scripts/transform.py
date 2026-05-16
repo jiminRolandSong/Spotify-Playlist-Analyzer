@@ -50,19 +50,3 @@ def transform_data():
 
 if __name__ == "__main__":
     transform_data()
-     
-    input_path = "data/raw_playlist_data.csv"
-    output_csv_path = "data/cleaned_playlist_data.csv"
-    output_parquet_path = "data/cleaned_playlist_data.parquet"
-    
-    if not os.path.exists(input_path):
-        print("FILE NOT FOUND")
-    else:
-        os.makedirs("data", exist_ok=True)
-        df = pd.read_csv(input_path)
-        df = transform_playlist_df(df)
-        # For PostgreSQL
-        df.to_csv("data/cleaned_playlist_data.csv", index=False)
-        # For Analytics
-        df.to_parquet("data/cleaned_playlist_data.parquet", index=False)
-        print("Transform complete: saved to data/cleaned_playlist_data.csv and data/cleaned_playlist_data.parquet")

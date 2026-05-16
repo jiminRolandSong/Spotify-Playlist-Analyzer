@@ -71,18 +71,19 @@ def load_to_postgreSQL(df, table_name="playlist_tracks"):
         # If a conflict occurs on (playlist_id, track_id), it updates the existing row.
         upsert_query = f"""
         INSERT INTO {table_name} (
-            playlist_id, track_id, track_name, track_duration_ms, track_popularity, 
+            playlist_id, track_id, track_name, track_duration_ms, track_duration_sec, track_popularity,
             track_genres, album_id, album_name, album_release_date, album_label,
             artist_ids, artist_names
         )
         SELECT
-            playlist_id, track_id, track_name, track_duration_ms, track_popularity, 
+            playlist_id, track_id, track_name, track_duration_ms, track_duration_sec, track_popularity,
             CAST(track_genres AS jsonb), album_id, album_name, CAST(album_release_date AS DATE), album_label,
             CAST(artist_ids AS jsonb), CAST(artist_names AS jsonb)
         FROM {temp_table_name}
         ON CONFLICT (playlist_id, track_id) DO UPDATE SET
             track_name = EXCLUDED.track_name,
             track_duration_ms = EXCLUDED.track_duration_ms,
+            track_duration_sec = EXCLUDED.track_duration_sec,
             track_popularity = EXCLUDED.track_popularity,
             track_genres = EXCLUDED.track_genres,
             album_id = EXCLUDED.album_id,

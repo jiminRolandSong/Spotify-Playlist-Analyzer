@@ -1,12 +1,43 @@
 import pandas as pd
 import plotly.express as px
 from collections import Counter
+import ast
+import json
+
+
+def ensure_list(value):
+    if isinstance(value, list):
+        return value
+    if value is None:
+        return []
+    try:
+        if pd.isna(value):
+            return []
+    except (TypeError, ValueError):
+        pass
+    if isinstance(value, tuple):
+        return list(value)
+    if isinstance(value, set):
+        return list(value)
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return []
+        for parser in (json.loads, ast.literal_eval):
+            try:
+                parsed = parser(value)
+            except Exception:
+                continue
+            if isinstance(parsed, list):
+                return parsed
+        return [value]
+    return [value]
 
 
 def top_artists_chart(df: pd.DataFrame, n: int = 10):
     counts = Counter()
     for cell in df["artist_names"]:
-        names = cell if isinstance(cell, list) else [cell]
+        names = ensure_list(cell)
         for name in names:
             if name:
                 counts[str(name).strip()] += 1
@@ -18,7 +49,7 @@ def top_artists_chart(df: pd.DataFrame, n: int = 10):
 def top_genres_chart(df: pd.DataFrame, n: int = 10):
     counts = Counter()
     for cell in df["track_genres"]:
-        genres = cell if isinstance(cell, list) else [cell]
+        genres = ensure_list(cell)
         for g in genres:
             if g:
                 counts[str(g).strip()] += 1

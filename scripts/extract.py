@@ -31,8 +31,8 @@ def spotify_api_setup():
     client_id = os.getenv('SPOTIPY_CLIENT_ID')
     client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 
-    print(f"Debug - client_id: {client_id}")
-    print(f"Debug - client_secret: {client_secret}")
+    print(f"Debug - client_id loaded: {bool(client_id)}")
+    print(f"Debug - client_secret loaded: {bool(client_secret)}")
 
     credentials = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
     sp = spotipy.Spotify(client_credentials_manager=credentials)

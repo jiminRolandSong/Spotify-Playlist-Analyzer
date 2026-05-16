@@ -311,6 +311,17 @@ spotify-playlist-analyzer/
 │       └── marts/
 │           └── mart_track_stats.sql      # Table: album-level aggregation via ref(stg_tracks)
 │
+├── streamlit_app.py                      # Streamlit entrypoint
+├── app/                                  # Streamlit app modules
+│   ├── auth.py                           # Streamlit authentication helpers
+│   ├── db.py                             # Supabase/PostgreSQL data access helpers
+│   ├── spotify_client.py                 # Spotify API client and playlist fetch logic
+│   ├── charts.py                         # Plotly chart builders
+│   └── pages/
+│       ├── analyze.py                    # Playlist analysis page
+│       ├── dashboard.py                  # Saved playlist dashboard page
+│       └── pipeline.py                   # Pipeline/dbt status page
+│
 ├── playlist_analyzer/                    # Django 5.2 web application
 │   ├── dashboard/
 │   │   ├── models.py                     # Playlist, Track models (JSONField, unique_together)

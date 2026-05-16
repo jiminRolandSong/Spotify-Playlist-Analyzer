@@ -47,7 +47,9 @@ def fetch_playlist_tracks(sp: spotipy.Spotify, playlist_id: str) -> tuple[dict, 
 
             genre_set = set()
             for a in artists:
-                aid = a["id"]
+                aid = a.get("id")
+                if not aid:
+                    continue
                 if aid not in artist_genre_cache:
                     try:
                         artist_genre_cache[aid] = sp.artist(aid).get("genres", [])
@@ -66,7 +68,7 @@ def fetch_playlist_tracks(sp: spotipy.Spotify, playlist_id: str) -> tuple[dict, 
                 "track_id": track["id"],
                 "track_name": track["name"],
                 "artist_names": [a["name"] for a in artists],
-                "artist_ids": [a["id"] for a in artists],
+                "artist_ids": [a.get("id") for a in artists if a.get("id")],
                 "album_id": album["id"],
                 "album_name": album["name"],
                 "album_release_date": _normalize_release_date(release_date),

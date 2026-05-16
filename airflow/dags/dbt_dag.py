@@ -38,4 +38,4 @@ with DAG(
         bash_command="docker exec airflow-dbt-1 dbt test",
     )
 
-    dbt_run >> dbt_test
+    wait_for_etl >> dbt_run >> dbt_test
